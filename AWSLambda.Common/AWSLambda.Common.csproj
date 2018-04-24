@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>BAMCIS.AWSLambda.Common</RootNamespace>
+    <AssemblyName>Common</AssemblyName>
+    <PackageId>BAMCIS.AWSLambda.Common</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>Michael Haken</Authors>
+    <Company>bamcis.io</Company>
+    <Product>AWS Lambda Common</Product>
+    <Description>Provides some commonly utilized tools for running AWS Lambda functions, particularly around writting logs via the ILambdaContext and dealing with asynchronous events.</Description>
+    <Copyright>BAMCIS</Copyright>
+    <RepositoryType>Git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+</Project>
