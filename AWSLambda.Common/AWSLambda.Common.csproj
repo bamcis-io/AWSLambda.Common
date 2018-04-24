@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>BAMCIS.AWSLambda.Common</RootNamespace>
-    <AssemblyName>Common</AssemblyName>
+    <AssemblyName>BAMCIS.AWSLambda.Common</AssemblyName>
     <PackageId>BAMCIS.AWSLambda.Common</PackageId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Authors>Michael Haken</Authors>
     <Company>bamcis.io</Company>
-    <Product>AWS Lambda Common</Product>
+    <Product>AWS Lambda Common Utilities</Product>
     <Description>Provides some commonly utilized tools for running AWS Lambda functions, particularly around writting logs via the ILambdaContext and dealing with asynchronous events.</Description>
     <Copyright>BAMCIS</Copyright>
     <RepositoryType>Git</RepositoryType>

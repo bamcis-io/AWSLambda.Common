@@ -138,7 +138,15 @@ namespace AWSLambda.Common.Tests
             };
 
             // ACT
-            Context.LogError(new Exception("This is bad", new FormatException("the wasn't formatted well")));
+            try
+            {
+                int Num = 0;
+                int Result = 100 / Num;
+            }
+            catch (Exception ex)
+            {
+                Context.LogError(ex);
+            }
 
             // ASSERT
             Assert.True(true);
