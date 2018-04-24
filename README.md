@@ -89,6 +89,9 @@ This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/201
 
 ## Revision History
 
+### 1.0.2
+Allowed a empty/null input for version in CloudWatchScheduledEvent.
+
 ### 1.0.1
 Updated package info.
 

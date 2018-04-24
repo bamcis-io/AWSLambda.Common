@@ -109,11 +109,6 @@ namespace BAMCIS.AWSLambda.Common.Events
             object detail
             )
         {
-            if (String.IsNullOrEmpty(version))
-            {
-                throw new ArgumentNullException("version");
-            }
-
             if (String.IsNullOrEmpty(account))
             {
                 throw new ArgumentNullException("account");
