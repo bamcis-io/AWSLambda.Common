@@ -23,18 +23,18 @@ Logging to CloudWatch logs is simply:
 
 Which will produce
 
-`"[INFO]		: This is an informational message."`
+    "[INFO]		: This is an informational message."
 
 You can also you it with exceptions:
 
     try
-	{
-		int Result = 100 / 0;
-	}
-	catch (Exception ex)
-	{
-		context.LogError(ex);
-	}
+    {
+      int Result = 100 / 0;
+    }
+    catch (Exception ex)
+    {
+      context.LogError(ex);
+    }
 
 Which will produce
 
