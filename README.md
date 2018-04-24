@@ -89,5 +89,8 @@ This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/201
 
 ## Revision History
 
+### 1.0.1
+Updated package info.
+
 ### 1.0.0
 Initial release of the application.

@@ -6,13 +6,20 @@
     <AssemblyName>BAMCIS.AWSLambda.Common</AssemblyName>
     <PackageId>BAMCIS.AWSLambda.Common</PackageId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Michael Haken</Authors>
     <Company>bamcis.io</Company>
     <Product>AWS Lambda Common Utilities</Product>
     <Description>Provides some commonly utilized tools for running AWS Lambda functions, particularly around writting logs via the ILambdaContext and dealing with asynchronous events.</Description>
     <Copyright>BAMCIS</Copyright>
     <RepositoryType>Git</RepositoryType>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
+    <PackageReleaseNotes>Fixed package info.</PackageReleaseNotes>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
