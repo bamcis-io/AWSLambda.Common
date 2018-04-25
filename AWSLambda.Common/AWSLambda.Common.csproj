@@ -16,9 +16,9 @@
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Fixed exception handling when an Exception cannot be deserialized by Json.NET successfully.</PackageReleaseNotes>
-    <Version>1.0.5</Version>
-    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <PackageReleaseNotes>Updated error log output format.</PackageReleaseNotes>
+    <Version>1.0.6</Version>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
   </PropertyGroup>
 

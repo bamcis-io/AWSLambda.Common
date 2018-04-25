@@ -1,11 +1,8 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.TestUtilities;
 using BAMCIS.AWSLambda.Common;
-using Newtonsoft.Json;
 using System;
-using System.Net;
 using System.Net.Http;
-using System.Net.Security;
 using System.Threading.Tasks;
 using Xunit;
 

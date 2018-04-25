@@ -69,60 +69,73 @@ namespace BAMCIS.AWSLambda.Common
         /// <returns>The ILambdaContext that was used to log the message</returns>
         public static ILambdaContext LogError(this ILambdaContext context, string message, Exception ex = null)
         {
-            StringBuilder SBuilder = new StringBuilder();
-
             if (String.IsNullOrEmpty(message) && ex == null)
             {
                 throw new ArgumentException("Both the message and exception cannot be null.");
             }
 
             if (!String.IsNullOrEmpty(message) && ex != null)
-            { 
-                SBuilder
-                    .Append("{")
-                    .Append("\"message\":\"")
-                    .Append(message)
-                    .Append("\",")
-                    .Append("\"exception\":")
-                    .Append(JsonConvert.SerializeObject(ex))
-                    .Append("}");
+            {
+                string Message = String.Empty;
+
+                try
+                {
+                    Message = JsonConvert.SerializeObject(
+                        new
+                        {
+                            Message = message,
+                            Exception = ex
+                        }
+                    );                   
+                }
+                catch (Exception)
+                {
+                    Message = JsonConvert.SerializeObject(
+                        new
+                        {
+                            Message = message,
+                            Exception = new
+                            {
+                                ClassName = ex.GetType().FullName,
+                                Message = ex.Message,
+                                InnerException = (ex.InnerException == null) ? "" : ex.InnerException.Message,
+                                StackTrackString = ex.StackTrace
+                            }
+                        }
+                    );
+                }
+
+                return context.LogMessage(Message, LogLevel.ERROR);
             }
             else if (!String.IsNullOrEmpty(message))
             {
-                SBuilder.Append(message);
+                return context.LogMessage(message, LogLevel.ERROR);
             }
             else
             {
                 try
                 {
-                    SBuilder.Append(JsonConvert.SerializeObject(ex));
+                    return context.LogMessage(JsonConvert.SerializeObject(ex), LogLevel.ERROR);
                 }
                 // This can occur in dotnetcore1.0 using Json.NET 10.0.1
                 // when trying to serialize a TaskCanceledException, it will
                 // throw a JsonSerializationException that there was an error
                 // getting the value of Result on System.Threading.Tasks.Task`1[TYPE]
-                catch (Exception e)
+                catch (Exception)
                 {
-                    SBuilder.Append("{")
-                        .Append("\"ClassName\":\"")
-                        .Append(ex.GetType().FullName)
-                        .Append("\",")
-                        .Append("\"Message\":\"")
-                        .Append(ex.Message)
-                        .Append("\",")
-                        .Append("\"InnerException\":\"")
-                        .Append(ex.InnerException)
-                        .Append("\",")
-                        .Append("\"StackTraceString\":\"")
-                        .Append(ex.StackTrace)
-                        .Append("\"")
-                        .Append("}");
+                    string Message = JsonConvert.SerializeObject(
+                        new
+                        {
+                            ClassName = ex.GetType().FullName,
+                            Message = ex.Message,
+                            InnerException = (ex.InnerException == null) ? "" : ex.InnerException.Message,
+                            StackTrackString = ex.StackTrace
+                        }
+                    );
+
+                    return context.LogMessage(Message, LogLevel.ERROR);
                 }
             }
-
-            string Message = SBuilder.ToString();
-
-            return context.LogMessage(Message, LogLevel.ERROR);
         }
 
         /// <summary>

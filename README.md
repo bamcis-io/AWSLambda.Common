@@ -89,6 +89,9 @@ This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/201
 
 ## Revision History
 
+### 1.0.6
+Updated error log output format.
+
 ### 1.0.5
 Fixed exception handling when an Exception cannot be deserialized by Json.NET successfully.
 
