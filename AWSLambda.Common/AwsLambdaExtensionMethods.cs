@@ -78,7 +78,6 @@ namespace BAMCIS.AWSLambda.Common
 
             if (!String.IsNullOrEmpty(message) && ex != null)
             { 
-
                 SBuilder
                     .Append("{")
                     .Append("\"message\":\"")
@@ -94,7 +93,31 @@ namespace BAMCIS.AWSLambda.Common
             }
             else
             {
-                SBuilder.Append(JsonConvert.SerializeObject(ex));
+                try
+                {
+                    SBuilder.Append(JsonConvert.SerializeObject(ex));
+                }
+                // This can occur in dotnetcore1.0 using Json.NET 10.0.1
+                // when trying to serialize a TaskCanceledException, it will
+                // throw a JsonSerializationException that there was an error
+                // getting the value of Result on System.Threading.Tasks.Task`1[TYPE]
+                catch (Exception e)
+                {
+                    SBuilder.Append("{")
+                        .Append("\"ClassName\":\"")
+                        .Append(ex.GetType().FullName)
+                        .Append("\",")
+                        .Append("\"Message\":\"")
+                        .Append(ex.Message)
+                        .Append("\",")
+                        .Append("\"InnerException\":\"")
+                        .Append(ex.InnerException)
+                        .Append("\",")
+                        .Append("\"StackTraceString\":\"")
+                        .Append(ex.StackTrace)
+                        .Append("\"")
+                        .Append("}");
+                }
             }
 
             string Message = SBuilder.ToString();

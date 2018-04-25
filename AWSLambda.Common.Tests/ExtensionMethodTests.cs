@@ -1,7 +1,11 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.TestUtilities;
 using BAMCIS.AWSLambda.Common;
+using Newtonsoft.Json;
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Security;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -148,6 +152,77 @@ namespace AWSLambda.Common.Tests
                 Context.LogError(ex);
             }
 
+            // ASSERT
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void TestWriteAggregateException()
+        {
+            // ARRANGE
+            TestLambdaLogger TestLogger = new TestLambdaLogger();
+            TestClientContext ClientContext = new TestClientContext();
+
+            ILambdaContext Context = new TestLambdaContext()
+            {
+                FunctionName = "Common",
+                FunctionVersion = "1",
+                Logger = TestLogger,
+                ClientContext = ClientContext
+            };
+
+            // ACT
+            try
+            {
+                Task T = Task.Factory.StartNew(() =>
+                {
+                    int Num = 0;
+                    int Result = 100 / Num;
+                });
+
+                T.Wait();
+            }
+            catch (AggregateException ex)
+            {
+                Context.LogError(ex);
+            }
+
+            // ASSERT
+            Assert.True(true);
+        }
+
+        [Fact]
+        public async Task TestWriteTaskCancelledException()
+        {
+            // ARRANGE
+            HttpClient Client = new HttpClient()
+            {
+                Timeout = TimeSpan.FromMilliseconds(500)
+
+            };
+
+            TestLambdaLogger TestLogger = new TestLambdaLogger();
+            TestClientContext ClientContext = new TestClientContext();
+
+            ILambdaContext Context = new TestLambdaContext()
+            {
+                FunctionName = "Common",
+                FunctionVersion = "1",
+                Logger = TestLogger,
+                ClientContext = ClientContext
+            };
+
+            // ACT
+            try
+            {
+                HttpRequestMessage Request = new HttpRequestMessage(HttpMethod.Head, "http://www.bamcis.io");
+                HttpResponseMessage Res = await Client.SendAsync(Request);
+            }
+            catch (TaskCanceledException ex)
+            {
+                Context.LogError(ex);
+            }
+ 
             // ASSERT
             Assert.True(true);
         }

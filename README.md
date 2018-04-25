@@ -89,6 +89,9 @@ This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/201
 
 ## Revision History
 
+### 1.0.5
+Fixed exception handling when an Exception cannot be deserialized by Json.NET successfully.
+
 ### 1.0.4
 Downgraded Json.NET dependency to only require .NETStandard 1.6.0.
 
