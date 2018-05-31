@@ -110,6 +110,12 @@ be serialized and delivered to the pre-signed S3 url.
 
 ## Revision History
 
+### 1.1.2
+Fixed the project setting that was defaulting to .NETStandard 1.6.1 and set it to 1.6.0.
+
+### 1.1.1
+Fixed Newtonsoft.Json dependency to not target .NETStandard 1.6.1.
+
 ### 1.1.0
 Added the Custom Resource types and retargetted framework to netstandard1.6.
 
