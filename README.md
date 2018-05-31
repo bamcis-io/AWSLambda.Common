@@ -4,6 +4,15 @@ Provides basic Extension Methods for the ILambdaContext to simplify logging mess
 functions. Also, provides an extension method to handle processing async tasks as they finish to help speed
 up execution time inside a Lambda function.
 
+## Table of Contents
+- [Usage](#usage)
+	* [Logging](#logging)
+	* [Interleaved](#interleaved)
+	* [Events](#events)
+		+ [CloudWatchScheduledEvent](#cloudwatchscheduledevent)
+		+ [CustomResources](#customresources)
+- [Revision History](#revisionhistory)
+
 ## Usage
 
 Basic usage examples:
@@ -87,7 +96,22 @@ Instead of printing:
 
 This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete/ "processing-tasks-as-they-complete")
 
+### Events
+
+#### CloudWatch Scheduled Event
+
+This is the event type that can be used when a Lambda function is triggered by a scheduled event.
+
+#### Custom Resources
+
+The `CustomResourceRequest` class is the event that is provided when a custom resource is created 
+with CloudFormation via a Lambda function. The `CustomResourceResponse` class is used as the item to
+be serialized and delivered to the pre-signed S3 url. 
+
 ## Revision History
+
+### 1.1.0
+Added the Custom Resource types and retargetted framework to netstandard1.6.
 
 ### 1.0.6
 Updated error log output format.

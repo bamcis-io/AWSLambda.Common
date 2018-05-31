@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netstandard1.6</TargetFramework>
     <RootNamespace>BAMCIS.AWSLambda.Common</RootNamespace>
     <AssemblyName>BAMCIS.AWSLambda.Common</AssemblyName>
     <PackageId>BAMCIS.AWSLambda.Common</PackageId>
@@ -16,9 +16,9 @@
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Updated error log output format.</PackageReleaseNotes>
-    <Version>1.0.6</Version>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <PackageReleaseNotes>Added Custom Resource events for creating custom resource with AWS Lambda and CloudFormation. Changed targetted framework to netstandard1.6.</PackageReleaseNotes>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
   </PropertyGroup>
 
