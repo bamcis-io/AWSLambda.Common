@@ -9,9 +9,9 @@ up execution time inside a Lambda function.
 	* [Logging](#logging)
 	* [Interleaved](#interleaved)
 	* [Events](#events)
-		+ [CloudWatchScheduledEvent](#cloudwatchscheduledevent)
-		+ [CustomResources](#customresources)
-- [Revision History](#revisionhistory)
+		+ [CloudWatch Scheduled Event](#cloudwatch-scheduled-event)
+		+ [Custom Resources](#custom-resources)
+- [Revision History](#revision-history)
 
 ## Usage
 
