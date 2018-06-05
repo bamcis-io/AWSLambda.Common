@@ -1,11 +1,76 @@
 ﻿using BAMCIS.AWSLambda.Common.Events;
+using BAMCIS.AWSLambda.Common.Events.SNS;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Xunit;
 
 namespace AWSLambda.Common.Tests
 {
     public class EventTests
     {
+        [Fact]
+        public void SNSS3EventTest()
+        {
+            // ARRANGE
+            string Json = @"
+{
+""Records"":[
+{
+""eventVersion"":""2.0"",
+""eventSource"":""aws:s3"",
+""awsRegion"":""us-east-1"",
+""eventTime"":""2018-05-02T12:11:00.000Z"",
+""eventName"":""ObjectCreated:Put"",
+""userIdentity"":{
+""principalId"":""AIDAJDPLRKLG7UEXAMPLE""
+},
+""requestParameters"":{
+""sourceIPAddress"":""127.0.0.1""
+},
+""responseElements"":{
+""x-amz-request-id"":""C3D13FE58DE4C810"",
+""x-amz-id-2"":""FMyUVURIY8/IgAtTv8xRjskZQpcIZ9KG4V5Wp6S7S/JRWeUWerMUE5JgHvANOjpD""
+},
+""s3"":{
+""s3SchemaVersion"":""1.0"",
+""configurationId"":""testConfigRule"",
+""bucket"":{
+""name"":""mybucket"",
+""ownerIdentity"":{
+""principalId"":""A3NL1KOZZKExample""
+},
+""arn"":""arn:aws:s3:::mybucket""
+},
+""object"":{
+""key"":""HappyFace.jpg"",
+""size"":1024,
+""eTag"":""d41d8cd98f00b204e9800998ecf8427e"",
+""versionId"":""096fKKXTRTtl3on89fVO.nfljtsv6qko"",
+""sequencer"":""0055AED6DCD90281E5""
+}
+}
+}
+]
+}";
+            Json = Json.Trim().Replace("\r", "").Replace("\n", "").Replace("\t", "");
+
+            // ACT
+            SNSS3RecordSet RecordSet = JsonConvert.DeserializeObject<SNSS3RecordSet>(Json);
+
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            IsoDateTimeConverter dateConverter = new IsoDateTimeConverter
+            {
+                DateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'"
+            };
+
+            settings.Converters.Add(dateConverter);
+
+            string Content = JsonConvert.SerializeObject(RecordSet, Formatting.None, settings);
+
+            // ASSERT
+            Assert.Equal(Json, Content, true, true, true);
+        }
+
         [Fact]
         public void CloudWatchEventTest()
         {
