@@ -16,9 +16,9 @@
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Added SNS S3 event message deserialization</PackageReleaseNotes>
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <PackageReleaseNotes>Added the CustomResourceHandler functionality.</PackageReleaseNotes>
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>
   </PropertyGroup>

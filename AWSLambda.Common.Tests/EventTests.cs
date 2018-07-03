@@ -1,8 +1,22 @@
-﻿using BAMCIS.AWSLambda.Common.Events;
+﻿using Amazon;
+using Amazon.ElasticTranscoder;
+using Amazon.ElasticTranscoder.Model;
+using Amazon.Lambda.Core;
+using Amazon.Lambda.TestUtilities;
+using Amazon.Runtime;
+using Amazon.Runtime.CredentialManagement;
+using BAMCIS.AWSLambda.Common;
+using BAMCIS.AWSLambda.Common.Events;
 using BAMCIS.AWSLambda.Common.Events.SNS;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using Xunit;
+using static BAMCIS.AWSLambda.Common.Events.CustomResourceResponse;
 
 namespace AWSLambda.Common.Tests
 {
@@ -323,6 +337,313 @@ namespace AWSLambda.Common.Tests
             CustomResourceResponse Response = new CustomResourceResponse(CustomResourceResponse.RequestStatus.SUCCESS, null, Request);
 
             // ASSERT    
+        }
+
+        [Fact]
+        public async Task CreateCustomResourceWithHandlerTest()
+        {
+            // ARRANGE
+            string AccountNumber = "123456789012";
+            string Region = "us-east-1";
+            string InputBucket = $"{Environment.UserName}-rawvideo";
+            string OutputBucket = $"{Environment.UserName}-video";
+            string ThumbnailBucket = $"{Environment.UserName}-thumbnails";
+            string IAMRole = $"arn:aws:iam::{AccountNumber}:role/LambdaElasticTranscoderPipeline";
+            string NotificationTopic = $"arn:aws:sns:{Region}:{AccountNumber}:ElasticTranscoderNotifications";
+
+            string Json = $@"
+{{
+""requestType"":""create"",
+""responseUrl"":""https://s3.{Region}.amazonaws.com/presigned-url/response.txt?X-Amz-Date=20180531T182534Z&X-Amz-SignedHeaders=host&X-Amz-Credential=AKIAIYLQNVRRFNZOCFFR%2F20170720%2F{Region}%2Fs3%2Faws4_request&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=604800&X-Amz-Security-Token=FQoDYXdzEJP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDOLWx95j90zPxGh7WSLdAVnoYoKC4gjrrR1xbokFWRRwutmuAmOxaIVcQqOy%2Fqxy%2FXQt3Iz%2FohuEEmI7%2FHPzShy%2BfgQtvfUeDaojrAx5q8fG9P1KuIfcedfkiU%2BCxpM2foyCGlXzoZuNlcF8ohm%2BaM3wh4%2BxQ%2FpShLl18cKiKEiw0QF1UQGj%2FsiEqzoM81vOSUVWL9SpTTkVq8EQHY1chYKBkBWt7eIQcxjTI2dQeYOohlrbnZ5Y1%2F1cxPgrbk6PkNFO3whAoliSjyRC8e4TSjIY2j3V6d9fUy4%2Fp6nLZIf9wuERL7xW9PjE6eZbKOHnw8sF&X-Amz-Signature=a14b3065ab822105e8d7892eb5dcc455ddd603c61e47520774a7289178af9ecc"",
+""stackId"":""arn:aws:cloudformation:{Region}:{AccountNumber}:stack/stack-name/{Guid.NewGuid().ToString()}"",
+""requestId"":""12345678"",
+""resourceType"":""Custom::TestResource"",
+""logicalResourceId"":""MyTestResource"",
+""resourceProperties"":{{
+""Role"":""{IAMRole}"",
+""Name"":""TestPipeline"",
+""InputBucket"":""{InputBucket}"",
+""Notifications"":{{
+""Error"": ""{NotificationTopic}"",
+}},
+""ContentConfig"":{{
+""Bucket"":""{OutputBucket}""
+}},
+""ThumbnailConfig"":{{
+""Bucket"":""{ThumbnailBucket}""
+}}
+}}
+}}";
+
+            Json = Json.Trim().Replace("\r", "").Replace("\n", "").Replace("\t", "");
+
+            Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> Create = async (request, context) =>
+            {
+                try
+                {
+                    AmazonElasticTranscoderConfig Config = new AmazonElasticTranscoderConfig();
+                    AmazonElasticTranscoderClient Client = new AmazonElasticTranscoderClient(Config);
+
+                    context.LogInfo("Attempting to create a pipeline.");
+                    CreatePipelineRequest PipelineRequest = JsonConvert.DeserializeObject<CreatePipelineRequest>(JsonConvert.SerializeObject(request.ResourceProperties));
+                    CreatePipelineResponse CreateResponse = await Client.CreatePipelineAsync(PipelineRequest);
+
+                    if ((int)CreateResponse.HttpStatusCode < 200 || (int)CreateResponse.HttpStatusCode > 299)
+                    {
+                        return new CustomResourceResponse(CustomResourceResponse.RequestStatus.FAILED, $"Received HTTP status code {(int)CreateResponse.HttpStatusCode}.", request);
+                    }
+                    else
+                    {
+                        return new CustomResourceResponse(
+                            CustomResourceResponse.RequestStatus.SUCCESS,
+                            $"See the details in CloudWatch Log Stream: {context.LogStreamName}.",
+                            CreateResponse.Pipeline.Id,
+                            request.StackId,
+                            request.RequestId,
+                            request.LogicalResourceId,
+                            false,
+                            new Dictionary<string, object>()
+                            {
+                            {"Name", CreateResponse.Pipeline.Name },
+                            {"Arn", CreateResponse.Pipeline.Arn },
+                            {"Id", CreateResponse.Pipeline.Id }
+                            }
+                        );
+                    }
+                }
+                catch (AmazonElasticTranscoderException e)
+                {
+                    context.LogError(e);
+
+                    return new CustomResourceResponse(
+                        CustomResourceResponse.RequestStatus.FAILED,
+                        e.Message,
+                        Guid.NewGuid().ToString(),
+                        request.StackId,
+                        request.RequestId,
+                        request.LogicalResourceId
+                    );
+                }
+                catch (Exception e)
+                {
+                    context.LogError(e);
+
+                    return new CustomResourceResponse(
+                        CustomResourceResponse.RequestStatus.FAILED,
+                        e.Message,
+                        Guid.NewGuid().ToString(),
+                        request.StackId,
+                        request.RequestId,
+                        request.LogicalResourceId
+                    );
+                }
+            };
+
+            Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> Update = async (request, context) =>
+            {
+                try
+                {
+                    context.LogInfo("Initiating update for pipeline.");
+
+                    UpdatePipelineRequest PipelineRequest = JsonConvert.DeserializeObject<UpdatePipelineRequest>(JsonConvert.SerializeObject(request.ResourceProperties));
+
+                    ListPipelinesRequest Listing = new ListPipelinesRequest();
+
+                    List<Pipeline> Pipelines = new List<Pipeline>();
+                    ListPipelinesResponse Pipes;
+
+                    AmazonElasticTranscoderConfig Config = new AmazonElasticTranscoderConfig();
+                    AmazonElasticTranscoderClient Client = new AmazonElasticTranscoderClient(Config);
+
+                    do
+                    {
+                        Pipes = await Client.ListPipelinesAsync(Listing);
+
+                        Pipelines.AddRange(Pipes.Pipelines.Where(x => x.Name.Equals(request.ResourceProperties["Name"] as string) &&
+                            x.InputBucket.Equals(request.ResourceProperties["InputBucket"]) &&
+                            x.Role.Equals(request.ResourceProperties["Role"])
+                        ));
+
+                    } while (Pipes.NextPageToken != null);
+
+                    if (Pipelines.Count > 1)
+                    {
+                        context.LogWarning($"{Pipelines.Count} pipelines were found matching the Name, InputBucket, and Role specified.");
+                    }
+
+                    if (Pipelines.Count > 0)
+                    {
+                        PipelineRequest.Id = Pipelines.First().Id;
+
+                        UpdatePipelineResponse UpdateResponse = await Client.UpdatePipelineAsync(PipelineRequest);
+
+                        if ((int)UpdateResponse.HttpStatusCode < 200 || (int)UpdateResponse.HttpStatusCode > 299)
+                        {
+                            return new CustomResourceResponse(CustomResourceResponse.RequestStatus.FAILED, $"Received HTTP status code {(int)UpdateResponse.HttpStatusCode}.", request);
+                        }
+                        else
+                        {
+                            return new CustomResourceResponse(
+                                CustomResourceResponse.RequestStatus.SUCCESS,
+                                $"See the details in CloudWatch Log Stream: {context.LogStreamName}.",
+                                request,
+                                false,
+                                new Dictionary<string, object>()
+                                {
+                                {"Name", UpdateResponse.Pipeline.Name },
+                                {"Arn", UpdateResponse.Pipeline.Arn },
+                                {"Id", UpdateResponse.Pipeline.Id }
+                                }
+                            );
+                        }
+                    }
+                    else
+                    {
+                        return new CustomResourceResponse(
+                            CustomResourceResponse.RequestStatus.FAILED,
+                            "No pipelines could be found with the matching characteristics.",
+                            request
+                        );
+                    }
+                }
+                catch (AmazonElasticTranscoderException e)
+                {
+                    return new CustomResourceResponse(
+                        CustomResourceResponse.RequestStatus.FAILED,
+                        e.Message,
+                        request
+                    );
+                }
+                catch (Exception e)
+                {
+                    return new CustomResourceResponse(
+                        CustomResourceResponse.RequestStatus.FAILED,
+                        e.Message,
+                        request
+                    );
+                }
+            };
+
+            Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> Delete = async (request, context) =>
+            {
+                try
+                {
+                    context.LogInfo("Attempting to delete a pipeline.");
+
+                    ListPipelinesRequest Listing = new ListPipelinesRequest();
+
+                    List<Pipeline> Pipelines = new List<Pipeline>();
+                    ListPipelinesResponse Pipes;
+
+                    AmazonElasticTranscoderConfig Config = new AmazonElasticTranscoderConfig();
+                    AmazonElasticTranscoderClient Client = new AmazonElasticTranscoderClient(Config);
+
+                    do
+                    {
+                        Pipes = await Client.ListPipelinesAsync(Listing);
+
+                        Pipelines.AddRange(Pipes.Pipelines.Where(x => x.Name.Equals(request.ResourceProperties["Name"] as string) &&
+                            x.InputBucket.Equals(request.ResourceProperties["InputBucket"]) &&
+                            x.Role.Equals(request.ResourceProperties["Role"])
+                        ));
+
+                    } while (Pipes.NextPageToken != null);
+
+                    if (Pipelines.Count > 1)
+                    {
+                        context.LogWarning($"{Pipelines.Count} pipelines were found matching the Name, InputBucket, and Role specified.");
+                    }
+
+                    if (Pipelines.Count > 0)
+                    {
+                        DeletePipelineRequest PipelineRequest = new DeletePipelineRequest()
+                        {
+                            Id = Pipelines.First().Id
+                        };
+
+                        DeletePipelineResponse DeleteResponse = await Client.DeletePipelineAsync(PipelineRequest);
+
+                        if ((int)DeleteResponse.HttpStatusCode < 200 || (int)DeleteResponse.HttpStatusCode > 299)
+                        {
+                            return new CustomResourceResponse(CustomResourceResponse.RequestStatus.FAILED, $"Received HTTP status code {(int)DeleteResponse.HttpStatusCode}.", request);
+                        }
+                        else
+                        {
+                            return new CustomResourceResponse(
+                                CustomResourceResponse.RequestStatus.SUCCESS,
+                                $"See the details in CloudWatch Log Stream: {context.LogStreamName}.",
+                                request,
+                                false
+                            );
+                        }
+                    }
+                    else
+                    {
+                        return new CustomResourceResponse(
+                            CustomResourceResponse.RequestStatus.SUCCESS,
+                            "No pipelines could be found with the matching characteristics.",
+                            request
+                        );
+                    }
+                }
+                catch (AmazonElasticTranscoderException e)
+                {
+                    // If the pipeline doesn't exist, consider it deleted
+                    if (e.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return new CustomResourceResponse(
+                            CustomResourceResponse.RequestStatus.SUCCESS,
+                            $"See the details in CloudWatch Log Stream: {context.LogStreamName}.",
+                            request
+                        );
+                    }
+                    else
+                    {
+                        return new CustomResourceResponse(
+                            CustomResourceResponse.RequestStatus.FAILED,
+                            e.Message,
+                            request
+                        );
+                    }
+                }
+                catch (Exception e)
+                {
+                    return new CustomResourceResponse(
+                        CustomResourceResponse.RequestStatus.FAILED,
+                        e.Message,
+                        request
+                    );
+                }
+            };
+
+            CustomResourceRequest Request = JsonConvert.DeserializeObject<CustomResourceRequest>(Json);
+            CustomResourceHandler Handler = new CustomResourceHandler(Create, Update, Delete);
+
+            TestLambdaLogger TestLogger = new TestLambdaLogger();
+            TestClientContext ClientContext = new TestClientContext();
+          
+            TestLambdaContext Context = new TestLambdaContext()
+            {
+                FunctionName = "ElasticTranscoderPipelineCreation",
+                FunctionVersion = "1",
+                Logger = TestLogger,
+                ClientContext = ClientContext,
+                LogGroupName = "aws/lambda/ElasticTranscoderPipeline",
+                LogStreamName = Guid.NewGuid().ToString()
+            };
+
+            AWSConfigs.AWSProfilesLocation = $"{Environment.GetEnvironmentVariable("UserProfile")}\\.aws\\credentials";
+
+            // ACT
+
+            CustomResourceResult Response = await Handler.Execute(Request, Context);
+
+            // ASSERT
+            Assert.NotNull(Response);
+            Assert.NotNull(Response.Response);
+            Assert.Equal(RequestStatus.SUCCESS, Response.Response.Status);
+            Assert.NotNull(Response.S3Response);
+            Assert.True(Response.S3Response.IsSuccessStatusCode);
         }
     }
 }

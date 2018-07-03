@@ -12,6 +12,7 @@ up execution time inside a Lambda function.
 		+ [CloudWatch Scheduled Event](#cloudwatch-scheduled-event)
 		+ [Custom Resources](#custom-resources)
 		+ [SNS S3 Events](#sns-s3-events)
+	* [Custom Resource Handler](#custom-resource-handler)
 - [Revision History](#revision-history)
 
 ## Usage
@@ -178,7 +179,75 @@ Keep in mind before serializing, you should check to make sure that the message 
        "HostId":"8cLeGAmw098X5cv4Zkwcmo8vvZa3eH3eKxsPzbB9wrR+YstdA6Knx4Ip8EXAMPLE"
     }
 
+### Custom Resource Handler
+
+In addition to the classes for serializing the custom resource requests and responses, there are classes that support aiding
+the automation of creating a custom resource Lambda function. The `CustomResourceHandler` class is a convenience wrapper around
+the workflow for implementing the required create, update, and delete actions a custom resource requires. You define 3 function delegates, 
+`create`, `update`, and `delete`, and then just call execute on the handler. For example, your AWS Lambda function might look like this:
+
+	using ...
+
+    // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
+    [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+
+    namespace MyLambdaFunction
+    {
+        public class Entrypoint
+        {
+		    private CustomResourceHandler _Handler;
+
+		    public Entrypoint() { 
+				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> create = async (request, context) => {
+				    // Do stuff here to create and return
+				    // a CustomResourceResponse object
+				};
+
+				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> update = async (request, context) => {
+				    // Do stuff here to update and return
+				    // a CustomResourceResponse object
+				};
+
+				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> delete = async (request, context) => {
+				    // Do stuff here to delete and return
+				    // a CustomResourceResponse object
+				};
+
+			    this._Handler = new CustomResourceHandler(
+				    create,
+					update,
+					delete
+				);
+			}
+
+			public async Task Run(CustomResourceRequest request, ILambdaContext context) 
+			{
+			    CustomResourceResult result = this._Handler.Execute(request, context);
+
+				if (result.IsSuccess)
+				{
+				    // Do something good here
+				}
+				else
+				{
+				    // Log some pertinent info here
+				}
+			}
+		}
+	}
+
+All of the request and response processing is performed in the handler, so all you have to do is write the delegate functions that will implement
+the actual create, update, and delete logic. The `CustomResourceResult` object contains the original request, the response that was generated to 
+be sent to the pre-signed S3 url, the http response from S3, and any exception that may have been thrown. The handler also does some basic logging
+to CloudWatch during execution to help troubleshoot, but your create, update, and delete functions should log along the way as well.
+
+I recommend constructing the handler in the Lambda function's constructor so you save the latency on building the object on subsequent invocations of
+your function.
+
 ## Revision History
+
+### 1.3.0
+Added the CustomResourceHandler functionality.
 
 ### 1.2.0
 Added SNS event records triggered by S3 actions.
