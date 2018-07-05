@@ -1,8 +1,7 @@
-﻿using BAMCIS.AWSLambda.Common.Events;
-using System;
+﻿using System;
 using System.Net.Http;
 
-namespace BAMCIS.AWSLambda.Common
+namespace BAMCIS.AWSLambda.Common.CustomResources
 {
     /// <summary>
     /// Contains the relevant request, response, and http responses objects from a custom

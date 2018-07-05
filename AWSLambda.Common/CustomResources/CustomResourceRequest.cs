@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
-namespace BAMCIS.AWSLambda.Common.Events
+namespace BAMCIS.AWSLambda.Common.CustomResources
 {
     /// <summary>
     /// These fields are sent in JSON requests from AWS CloudFormation to the custom resource provider

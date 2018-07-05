@@ -10,15 +10,15 @@
     <Authors>Michael Haken</Authors>
     <Company>bamcis.io</Company>
     <Product>AWS Lambda Common Utilities</Product>
-    <Description>Provides some commonly utilized tools for running AWS Lambda functions, particularly around writting logs via the ILambdaContext and dealing with asynchronous events.</Description>
+    <Description>Provides some commonly utilized tools for running AWS Lambda functions, particularly around writting logs via the ILambdaContext and dealing with asynchronous events. Additionally provides a framework to simplify custom resource creation with CloudFormation.</Description>
     <Copyright>BAMCIS</Copyright>
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Added the CustomResourceHandler functionality.</PackageReleaseNotes>
-    <Version>1.3.0</Version>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <PackageReleaseNotes>Updated the custom resource framework to include interfaces, base classes, and factory methods.</PackageReleaseNotes>
+    <Version>1.4.0</Version>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>
   </PropertyGroup>

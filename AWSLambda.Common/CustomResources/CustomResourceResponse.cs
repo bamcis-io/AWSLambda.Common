@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
-namespace BAMCIS.AWSLambda.Common.Events
+namespace BAMCIS.AWSLambda.Common.CustomResources
 {
     /// <summary>
     /// The following are properties that the custom resource provider includes when it sends the JSON file to the presigned URL.

@@ -182,9 +182,29 @@ Keep in mind before serializing, you should check to make sure that the message 
 ### Custom Resource Handler
 
 In addition to the classes for serializing the custom resource requests and responses, there are classes that support aiding
-the automation of creating a custom resource Lambda function. The `CustomResourceHandler` class is a convenience wrapper around
-the workflow for implementing the required create, update, and delete actions a custom resource requires. You define 3 function delegates, 
-`create`, `update`, and `delete`, and then just call execute on the handler. For example, your AWS Lambda function might look like this:
+the automation of creating a custom resource Lambda function. The `CustomResourceHandler` class is an abstract class that you 
+can inherit in your class the Lambda function handler targets.
+
+    using ...
+
+    // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
+    [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+
+    namespace MyLambdaFunction
+    {
+        public class Entrypoint : CustomResourceHandler
+        {
+
+		...
+
+Then, you just need to implement 3 methods, `CreateAsync`, `UpdateAsync`, and `DeleteAsync`. You shouldn't need to override the
+`ExecuteAsync` method, but you can if you want to do something different. I'd reccomend looking at what the default code is before
+you override it to make sure you cover all of the cases it manages. The `ExecuteAsync` method can be the direct target of the Lambda
+invocation handler, so in the case above you'd specify "MyLambdaFunction::MyLamdbaFunction.Entrypoint::ExecuteAsync".
+
+In addition to the abstract `CustomResourceHandler` class, there is a concrete implementation in the `CustomResourceFactory` class. 
+Instead of implementing the 3 required methods in the class, you can specify them as delegates in the class constructor and call the
+`ExecuteAsync` method in your entrypoint. For example, your AWS Lambda function might look like this:
 
 	using ...
 
@@ -195,34 +215,34 @@ the workflow for implementing the required create, update, and delete actions a 
     {
         public class Entrypoint
         {
-		    private CustomResourceHandler _Handler;
+		    private ICustomResourceHandler _Handler;
 
 		    public Entrypoint() { 
-				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> create = async (request, context) => {
+				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> createAsync = async (request, context) => {
 				    // Do stuff here to create and return
 				    // a CustomResourceResponse object
 				};
 
-				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> update = async (request, context) => {
+				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> updateAsync = async (request, context) => {
 				    // Do stuff here to update and return
 				    // a CustomResourceResponse object
 				};
 
-				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> delete = async (request, context) => {
+				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> deleteAsync = async (request, context) => {
 				    // Do stuff here to delete and return
 				    // a CustomResourceResponse object
 				};
 
-			    this._Handler = new CustomResourceHandler(
-				    create,
-					update,
-					delete
+			    this._Handler = new CustomResourceFactory(
+				    createAsync,
+					updateAsync,
+					deleteAsync
 				);
 			}
 
 			public async Task Run(CustomResourceRequest request, ILambdaContext context) 
 			{
-			    CustomResourceResult result = this._Handler.Execute(request, context);
+			    CustomResourceResult result = this._Handler.ExecuteAsync(request, context);
 
 				if (result.IsSuccess)
 				{
@@ -236,8 +256,10 @@ the workflow for implementing the required create, update, and delete actions a 
 		}
 	}
 
-All of the request and response processing is performed in the handler, so all you have to do is write the delegate functions that will implement
-the actual create, update, and delete logic. The `CustomResourceResult` object contains the original request, the response that was generated to 
+All of the request and response processing is performed in the handler, in either implementation you want to use, 
+so all you have to do is write the delegate functions or member functions that will implement the actual create, update, and delete logic. 
+
+The `CustomResourceResult` object contains the original request, the response that was generated to 
 be sent to the pre-signed S3 url, the http response from S3, and any exception that may have been thrown. The handler also does some basic logging
 to CloudWatch during execution to help troubleshoot, but your create, update, and delete functions should log along the way as well.
 
@@ -245,6 +267,10 @@ I recommend constructing the handler in the Lambda function's constructor so you
 your function.
 
 ## Revision History
+
+### 1.4.0
+Added more functionality to the CustomResourceHandler framework. All classes related to custom resource handling have
+all been moved into their own namespace.
 
 ### 1.3.0
 Added the CustomResourceHandler functionality.
