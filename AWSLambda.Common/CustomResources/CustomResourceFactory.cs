@@ -6,7 +6,7 @@ namespace BAMCIS.AWSLambda.Common.CustomResources
 {
     /// <summary>
     /// A basic implementation of the CustomResourceHandler. Simply provide the 
-    /// create, update, and delete methods upon creation, and then call Execute
+    /// create, update, and delete methods upon creation, and then call ExecuteAsync
     /// passing through the custom resource request and the Lambda context. 
     /// </summary>
     public class CustomResourceFactory : CustomResourceHandler, ICustomResourceHandler
