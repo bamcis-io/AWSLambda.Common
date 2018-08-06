@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BAMCIS.AWSLambda.Common
 {
+    /// <summary>
+    /// Convenience methods for common checks on function input parameters
+    /// </summary>
     public static class ParameterTests
     {
         #region Public Methods
@@ -21,6 +22,16 @@ namespace BAMCIS.AWSLambda.Common
         {
             if (String.IsNullOrEmpty(value))
             {
+                if (parameterName == null)
+                {
+                    parameterName = String.Empty;
+                }
+
+                if (message == null)
+                {
+                    message = String.Empty;
+                }
+
                 throw new ArgumentNullException(parameterName, message);
             }
             else
@@ -29,27 +40,76 @@ namespace BAMCIS.AWSLambda.Common
             }
         }
 
+        /// <summary>
+        /// Tests if the provided expression is true, and if not throws an out of range exception
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="message"></param>
         public static void OutOfRange(bool expression, string parameterName, string message = "")
         {
             if (expression == false)
             {
+                if (parameterName == null)
+                {
+                    parameterName = String.Empty;
+                }
+
+                if (message == null)
+                {
+                    message = String.Empty;
+                }
+
                 throw new ArgumentOutOfRangeException(parameterName, message);
             }
         }
 
+        /// <summary>
+        /// Checks that the provided expression is true, and if not, throws
+        /// an ArgumentException
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="message"></param>
         public static void Check(bool expression, string message)
         {
             if (expression == false)
             {
+                if (message == null)
+                {
+                    message = String.Empty;
+                }
+
                 throw new ArgumentException(message);
             }
         }
 
-        public static void NonNull<T>(T value, string parameterName, string message = "") where T : class
+        /// <summary>
+        /// Checks that the provided value is not null and if it is, throws an ArgumentNullException
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static T NonNull<T>(T value, string parameterName, string message = "") where T : class
         {
             if (value == null)
             {
+                if (parameterName == null)
+                {
+                    parameterName = String.Empty;
+                }
+
+                if (message == null)
+                {
+                    message = String.Empty;
+                }
+
                 throw new ArgumentNullException(parameterName, message);
+            }
+            else
+            {
+                return value;
             }
         }
 

@@ -12,6 +12,7 @@ up execution time inside a Lambda function.
 		+ [CloudWatch Scheduled Event](#cloudwatch-scheduled-event)
 		+ [Custom Resources](#custom-resources)
 		+ [SNS S3 Events](#sns-s3-events)
+        + [Kinesis Firehose Events](#kinesis-firehose-events)
 	* [Custom Resource Handler](#custom-resource-handler)
 - [Revision History](#revision-history)
 
@@ -25,7 +26,7 @@ Given an ILambdaContext such as
 
     public Function(CloudWatchScheduledEvent @event, ILambdaContext context)
 	{
-		...
+	    ...
 	}
 
 Logging to CloudWatch logs is simply:
@@ -34,69 +35,69 @@ Logging to CloudWatch logs is simply:
 
 Which will produce
 
-    "[INFO]		: This is an informational message."
+    "[INFO]	: This is an informational message."
 
 You can also you it with exceptions:
 
     try
     {
-      int Result = 100 / 0;
+        int Result = 100 / 0;
     }
     catch (Exception ex)
     {
-      context.LogError(ex);
+        context.LogError(ex);
     }
 
 Which will produce
 
     {
-	  "ClassName":"System.DivideByZeroException",
-	  "Message":"Attempted to divide by zero.",
-	  "Data":null,
-	  "InnerException":null,
-	  "HelpURL":null,
-	  "StackTraceString":"   at AWSLambda.Common.Tests.ExtensionMethodTests.TestWriteException() in C:\\Workspaces\\AWSLambda.Common\\AWSLambda.Common.Tests\\ExtensionMethodTests.cs:line 144",
-	  "RemoteStackTraceString":null,
-	  "RemoteStackIndex":0,
-	  "ExceptionMethod":null,
-	  "HResult":-2147352558,
-	  "Source":"AWSLambda.Common.Tests",
-	  "WatsonBuckets":null
+	    "ClassName":"System.DivideByZeroException",
+	    "Message":"Attempted to divide by zero.",
+	    "Data":null,
+	    "InnerException":null,
+	    "HelpURL":null,
+	    "StackTraceString":"   at AWSLambda.Common.Tests.ExtensionMethodTests.TestWriteException() in C:\\Workspaces\\AWSLambda.Common\\AWSLambda.Common.Tests\\ExtensionMethodTests.cs:line 144",
+	    "RemoteStackTraceString":null,
+	    "RemoteStackIndex":0,
+	    "ExceptionMethod":null,
+	    "HResult":-2147352558,
+	    "Source":"AWSLambda.Common.Tests",
+	    "WatsonBuckets":null
 	}
 
 ### Interleaved
 
     Task<int>[] Tasks = new[] {
-      Task.Delay(3000).ContinueWith(_ => 3),
-      Task.Delay(1000).ContinueWith(_ => 1),
-      Task.Delay(2000).ContinueWith(_ => 2),
-      Task.Delay(5000).ContinueWith(_ => 5),
-      Task.Delay(4000).ContinueWith(_ => 4),
+        Task.Delay(3000).ContinueWith(_ => 3),
+        Task.Delay(1000).ContinueWith(_ => 1),
+        Task.Delay(2000).ContinueWith(_ => 2),
+        Task.Delay(5000).ContinueWith(_ => 5),
+        Task.Delay(4000).ContinueWith(_ => 4),
     };
 
     foreach (Task<int> CompletedTask in Tasks.Interleaved())
     {
-      int Result = await CompletedTask;
-      Console.WriteLine($"{DateTime.Now.ToString()}: {Result}");
+        int Result = await CompletedTask;
+        Console.WriteLine($"{DateTime.Now.ToString()}: {Result}");
     }
 
 If the start time is 4/23/2018 08:00:00 AM, this will print
 
-4/23/2018 08:00:01 AM: 1
-4/23/2018 08:00:02 AM: 2
-4/23/2018 08:00:03 AM: 3
-4/23/2018 08:00:04 AM: 4
-4/23/2018 08:00:05 AM: 5
+    4/23/2018 08:00:01 AM: 1
+    4/23/2018 08:00:02 AM: 2
+    4/23/2018 08:00:03 AM: 3
+    4/23/2018 08:00:04 AM: 4
+    4/23/2018 08:00:05 AM: 5
 
 Instead of printing:
 
-4/23/2018 08:00:03 AM: 3
-4/23/2018 08:00:03 AM: 1
-4/23/2018 08:00:03 AM: 2
-4/23/2018 08:00:05 AM: 5
-4/23/2018 08:00:05 AM: 4
+    4/23/2018 08:00:03 AM: 3
+    4/23/2018 08:00:03 AM: 1
+    4/23/2018 08:00:03 AM: 2
+    4/23/2018 08:00:05 AM: 5
+    4/23/2018 08:00:05 AM: 4
 
-This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete/ "processing-tasks-as-they-complete")
+This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete/ "processing-tasks-as-they-complete").
 
 ### Events
 
@@ -118,9 +119,9 @@ The provided classes represent the collection of records inside a SNS message bo
     public void Entrypoint(SNSEvent event, ILambdaContext context)
 	{
 	    foreach (SNSRecord record in event.Records)
-		{
-			string message = record.Message;
-		}
+	    {
+            string message = record.Message;
+	    }
 	}
 
 That `message` string looks like the following JSON:
@@ -179,6 +180,45 @@ Keep in mind before serializing, you should check to make sure that the message 
        "HostId":"8cLeGAmw098X5cv4Zkwcmo8vvZa3eH3eKxsPzbB9wrR+YstdA6Knx4Ip8EXAMPLE"
     }
 
+#### Kinesis Firehose Events
+
+Provides classes for accepting events in a Lambda function originating from a Kinesis Firehose Transformation. There are two major categories of records in a Kinesis Firehose, records originating from a Kinesis Stream and all of the others. The Kinesis Stream records has an additional property in the record `KinesisRecordMetadata`. For those types of events configure your entrypoint like this:
+
+    public KinesisFirehoseTransformResponse Entrypoint(KinesisFirehoseEvent<KinesisFirehoseKinesisStreamRecord> firehoseEvent, ILambdaContext context)
+
+For all of the other types of events configure your entrypoint like this:
+
+	 public KinesisFirehoseTransformResponse Entrypoint(KinesisFirehoseEvent firehoseEvent, ILambdaContext context)
+  
+This defaults the records in the `firehoseEvent` object to be of type `KinesisFirehoseRecord`.
+
+After performing the transform return a 'KinesisFirehoseTransformResponse' constructed with an `IEnumerable<KinesisFirehoseTranformationRecord>`. Each `KinesisFirehoseTranformationRecord` represents the transform of a single `KinesisFirehoseRecord`. An overall example of a Lambda function tranformation might look like the following. This transformation takes JSON data in a Kinesis Stream and converts it to CSV.
+
+    public KinesisFirehoseTransformResponse Exec(KinesisFirehoseEvent request, ILambdaContext context)
+    {
+        List<KinesisFirehoseTransformedRecord> TransformedRecords = new List<KinesisFirehoseTransformedRecord>();
+
+        foreach (KinesisFirehoseRecord Record in request.Records)
+        {
+            try
+            {
+                string Data = Record.DecodeData();
+                JObject Obj = JObject.Parse(Data);
+                string Row = Convert.ToBase64String(Encoding.UTF8.GetBytes(String.Join("|", Obj.ToObject<Dictionary<string, string>>().Select(x => x.Value)) + "\n"));
+
+                KinesisFirehoseTransformedRecord Transform = new KinesisFirehoseTransformedRecord(Record.RecordId, Row, TransformationResultStatus.OK);
+                TransformedRecords.Add(Transform);
+            }
+            catch (Exception e)
+            {
+                KinesisFirehoseTransformedRecord Transform = new KinesisFirehoseTransformedRecord(Record.RecordId, Record.Data, TransformationResultStatus.PROCESSING_FAILED);
+                TransformedRecords.Add(Transform);
+            }
+        }
+
+        return new KinesisFirehoseTransformResponse(TransformedRecords);
+    }
+
 ### Custom Resource Handler
 
 In addition to the classes for serializing the custom resource requests and responses, there are classes that support aiding
@@ -194,8 +234,7 @@ can inherit in your class the Lambda function handler targets.
     {
         public class Entrypoint : CustomResourceHandler
         {
-
-		...
+            ...
 
 Then, you just need to implement 3 methods, `CreateAsync`, `UpdateAsync`, and `DeleteAsync`. You shouldn't need to override the
 `ExecuteAsync` method, but you can if you want to do something different. I'd reccomend looking at what the default code is before
@@ -215,46 +254,47 @@ Instead of implementing the 3 required methods in the class, you can specify the
     {
         public class Entrypoint
         {
-		    private ICustomResourceHandler _Handler;
+	        private ICustomResourceHandler _Handler;
 
-		    public Entrypoint() { 
-				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> createAsync = async (request, context) => {
-				    // Do stuff here to create and return
-				    // a CustomResourceResponse object
-				};
+            public Entrypoint() 
+            { 
+                Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> createAsync = async (request, context) => {
+                    // Do stuff here to create and return
+                    // a CustomResourceResponse object
+	            };
 
-				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> updateAsync = async (request, context) => {
-				    // Do stuff here to update and return
-				    // a CustomResourceResponse object
-				};
+                Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> updateAsync = async (request, context) => {
+                    // Do stuff here to update and return
+                    // a CustomResourceResponse object
+                };
 
-				Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> deleteAsync = async (request, context) => {
-				    // Do stuff here to delete and return
-				    // a CustomResourceResponse object
-				};
+                Func<CustomResourceRequest, ILambdaContext, Task<CustomResourceResponse>> deleteAsync = async (request, context) => {
+                    // Do stuff here to delete and return
+                    // a CustomResourceResponse object
+                };
 
-			    this._Handler = new CustomResourceFactory(
-				    createAsync,
-					updateAsync,
-					deleteAsync
-				);
-			}
+                this._Handler = new CustomResourceFactory(
+                    createAsync,
+                    updateAsync,
+                    deleteAsync
+                );
+           }
 
-			public async Task Run(CustomResourceRequest request, ILambdaContext context) 
-			{
-			    CustomResourceResult result = this._Handler.ExecuteAsync(request, context);
+           public async Task Run(CustomResourceRequest request, ILambdaContext context) 
+           {
+               CustomResourceResult result = this._Handler.ExecuteAsync(request, context);
 
-				if (result.IsSuccess)
-				{
-				    // Do something good here
-				}
-				else
-				{
-				    // Log some pertinent info here
-				}
-			}
-		}
-	}
+               if (result.IsSuccess)
+               {
+                   // Do something good here
+               }
+               else
+               {
+                   // Log some pertinent info here
+               }
+           }
+        }
+    }
 
 All of the request and response processing is performed in the handler, in either implementation you want to use, 
 so all you have to do is write the delegate functions or member functions that will implement the actual create, update, and delete logic. 
@@ -267,6 +307,9 @@ I recommend constructing the handler in the Lambda function's constructor so you
 your function.
 
 ## Revision History
+
+### 1.5.0
+New event object and response object for Kinesis Firehose transformation events, both for records sourced from locations like S3 as well as Kinesis Streams.
 
 ### 1.4.0
 Added more functionality to the CustomResourceHandler framework. All classes related to custom resource handling have

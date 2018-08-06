@@ -1,8 +1,15 @@
-﻿using BAMCIS.AWSLambda.Common.CustomResources;
+﻿using Amazon.Lambda.TestUtilities;
+using BAMCIS.AWSLambda.Common.CustomResources;
 using BAMCIS.AWSLambda.Common.Events;
+using BAMCIS.AWSLambda.Common.Events.KinesisFirehose;
 using BAMCIS.AWSLambda.Common.Events.SNS;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace AWSLambda.Common.Tests
@@ -326,5 +333,123 @@ namespace AWSLambda.Common.Tests
             // ASSERT    
         }
 
+        [Fact]
+        public void KinesisFirehoseEventTest()
+        {
+            // ARRANGE
+            KinesisFirehoseEvent Event = new KinesisFirehoseEvent(
+                new List<KinesisFirehoseRecord>() {
+                    new KinesisFirehoseRecord(
+                        "1",
+                        Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"name\":\"Mike\",\"age\":34}")),
+                        1234567890)
+                    },
+                "us-east-1",
+                "arn:aws:firehose:us-east-1:123456789012:deliverystream/delivery-stream-name",
+                "123"
+            );
+
+            // ACT
+            string Json = JsonConvert.SerializeObject(Event);
+
+            // ASSERT
+            Assert.True(JsonConvert.DeserializeObject<KinesisFirehoseEvent>(Json) != null);
+        }
+     
+        [Fact]
+        public void KinesisFirehoseResponseLambdaFunctionTest()
+        {
+            // ARRANGE
+            TestLambdaLogger TestLogger = new TestLambdaLogger();
+            TestClientContext ClientContext = new TestClientContext();
+
+            TestLambdaContext Context = new TestLambdaContext()
+            {
+                FunctionName = "KinesisFirehoseTest",
+                FunctionVersion = "1",
+                Logger = TestLogger,
+                ClientContext = ClientContext
+            };
+
+            KinesisFirehoseEvent Event = new KinesisFirehoseEvent(
+               new List<KinesisFirehoseRecord>() {
+                    new KinesisFirehoseRecord(
+                        "1",
+                        Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"name\":\"Mike\",\"age\":34}")),
+                        1234567890)
+                   },
+               "us-east-1",
+               "arn:aws:firehose:us-east-1:123456789012:deliverystream/delivery-stream-name",
+               "123"
+           );
+
+            KinesisFirehoseEventLambdaFunction Function = new KinesisFirehoseEventLambdaFunction();
+
+            string Json = "";
+
+            // ACT
+            KinesisFirehoseTransformResponse Response = Function.Exec(Event, Context);
+            using (MemoryStream MStream = new MemoryStream())
+            {
+                using (StreamReader Reader = new StreamReader(MStream))
+                {
+                    Amazon.Lambda.Serialization.Json.JsonSerializer Serde = new Amazon.Lambda.Serialization.Json.JsonSerializer();
+                    Serde.Serialize(Response, MStream);
+                    MStream.Position = 0;
+                    Json = Reader.ReadToEnd();
+                }                
+            }
+
+            // ASSERT
+            Assert.True(!String.IsNullOrEmpty(Json));
+        }
+
+        [Fact]
+        public async Task KinesisFirehoseResponseLambdaFunctionAsyncTest()
+        {
+            // ARRANGE
+            TestLambdaLogger TestLogger = new TestLambdaLogger();
+            TestClientContext ClientContext = new TestClientContext();
+
+            TestLambdaContext Context = new TestLambdaContext()
+            {
+                FunctionName = "KinesisFirehoseTest",
+                FunctionVersion = "1",
+                Logger = TestLogger,
+                ClientContext = ClientContext
+            };
+
+            KinesisFirehoseEvent Event = new KinesisFirehoseEvent(
+               new List<KinesisFirehoseRecord>() {
+                    new KinesisFirehoseRecord(
+                        "1",
+                        Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"name\":\"Mike\",\"age\":34}")),
+                        1234567890)
+                   },
+               "us-east-1",
+               "arn:aws:firehose:us-east-1:123456789012:deliverystream/delivery-stream-name",
+               "123"
+           );
+
+            KinesisFirehoseEventLambdaFunction Function = new KinesisFirehoseEventLambdaFunction();
+
+            string Json = "";
+
+            // ACT
+            KinesisFirehoseTransformResponse Response = await Function.ExecAsync(Event, Context);
+            using (MemoryStream MStream = new MemoryStream())
+            {
+                using (StreamReader Reader = new StreamReader(MStream))
+                {
+                    Amazon.Lambda.Serialization.Json.JsonSerializer Serde = new Amazon.Lambda.Serialization.Json.JsonSerializer();
+                    Serde.Serialize(Response, MStream);
+                    MStream.Position = 0;
+                    Json = Reader.ReadToEnd();
+                }
+            }
+
+            // ASSERT
+            Assert.True(!String.IsNullOrEmpty(Json));
+        }
     }
 }
