@@ -4,6 +4,8 @@ Provides basic Extension Methods for the ILambdaContext to simplify logging mess
 functions. Also, provides an extension method to handle processing async tasks as they finish to help speed
 up execution time inside a Lambda function.
 
+New functionality includes Lambda event sources not included in the AWS .NET SDK, like a scheduled event or a Kinesis Firehose transformation. New deserialization classes have been added for SageMaker so you can process responses from a SageMaker endpoint in a Lambda function.
+
 ## Table of Contents
 - [Usage](#usage)
 	* [Logging](#logging)
@@ -14,6 +16,7 @@ up execution time inside a Lambda function.
 		+ [SNS S3 Events](#sns-s3-events)
         + [Kinesis Firehose Events](#kinesis-firehose-events)
 	* [Custom Resource Handler](#custom-resource-handler)
+    * [SageMaker](#sagemaker)
 - [Revision History](#revision-history)
 
 ## Usage
@@ -306,7 +309,18 @@ to CloudWatch during execution to help troubleshoot, but your create, update, an
 I recommend constructing the handler in the Lambda function's constructor so you save the latency on building the object on subsequent invocations of
 your function.
 
+### SageMaker
+Provides classes that can be used to deserialize JSON responses from SageMaker such as Linear Learner Binary Classification, K-Means, or Random Cut Forest. Make sure you have specified your output from the SageMaker endpoint as `application/json`.
+
+
+This is an example of converting the response from SageMaker for a Linear Learner Binary Classification prediction model.
+
+    LinearLearnerBinaryInferenceResponse Response = JsonConvert.DeserializeObject<LinearLearnerBinaryInferenceResponse>(Json);
+
 ## Revision History
+
+### 1.6.0
+Added SageMaker response objects.
 
 ### 1.5.0
 New event object and response object for Kinesis Firehose transformation events, both for records sourced from locations like S3 as well as Kinesis Streams.

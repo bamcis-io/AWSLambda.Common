@@ -10,15 +10,15 @@
     <Authors>Michael Haken</Authors>
     <Company>bamcis.io</Company>
     <Product>AWS Lambda Common Utilities</Product>
-    <Description>Provides some commonly utilized tools for running AWS Lambda functions, particularly around writting logs via the ILambdaContext and dealing with asynchronous events. Additionally provides a framework to simplify custom resource creation with CloudFormation.</Description>
+    <Description>Provides some commonly utilized tools for running AWS Lambda functions. Functions around writting logs via the ILambdaContext, dealing with asynchronous events, provides a framework to simplify custom resource creation with CloudFormation, and includes event sources and response objects for Lambda functions that are not part of the AWS .NET SDK.</Description>
     <Copyright>BAMCIS</Copyright>
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Added Kinesis Firehose event type.</PackageReleaseNotes>
-    <Version>1.5.0</Version>
-    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <PackageReleaseNotes>Added SageMaker response objects for deserializing into .NET.</PackageReleaseNotes>
+    <Version>1.6.0</Version>
+    <AssemblyVersion>1.6.0.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>
   </PropertyGroup>
