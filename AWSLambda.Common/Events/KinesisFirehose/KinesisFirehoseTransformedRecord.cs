@@ -60,23 +60,30 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         #region Public Methods
 
         /// <summary>
-        /// Creates a new transformed record passing the Base64 data from the Kinesis Firehose record to the transformation function
+        /// Creates a new transformed record. By default the Kinesis Firehose Base64 data is decoded into UTF8 before being passed to the tranform function.
         /// </summary>
-        /// <param name="record"></param>
-        /// <param name="transform"></param>
-        /// <returns>
-        /// The output of the transformation function, or if an unhandled exception occurs,
-        /// the exception type and message in a processing failed record.
-        /// </returns>
-        public static KinesisFirehoseTransformedRecord Build(KinesisFirehoseRecord record, Func<string, TransformationResult> transform)
+        /// <param name="record">The Kinesis Firehose record</param>
+        /// <param name="transform">The function that will transform the data from the Kinesis Firehose record</param>
+        /// <param name="useDefaultEncoding">Specifies if the data in the Kinesis Firehose record should be decoded using
+        /// the default text encoding, UTF8. If this is false, the data will be passed to the transform function as a Base64 encoded string</param>
+        /// <returns>The transformed record</returns>
+        public static KinesisFirehoseTransformedRecord Build(KinesisFirehoseRecord record, Func<string, TransformationResult> transform, bool useDefaultEncoding = true)
         {
             ParameterTests.NonNull(record, "record");
             ParameterTests.NonNull(transform, "transform");
 
             try
             {
-                TransformationResult Result = transform.Invoke(record.Data);
+                string Data = record.Data;
+
+                if (useDefaultEncoding)
+                {
+                    Data = record.DecodeData();
+                }
+
+                TransformationResult Result = transform.Invoke(Data);
                 return new KinesisFirehoseTransformedRecord(record.RecordId, Result.Data, Result.Result);
+
             }
             catch (Exception e)
             {
@@ -85,15 +92,13 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         }
 
         /// <summary>
-        /// Creates a new transformed record
+        /// Creates a new transformed record. The Kinesis Firehose Base64 data is decided using the provided encoding parameter before being passed to the
+        /// transform function.
         /// </summary>
-        /// <param name="record"></param>
-        /// <param name="transform"></param>
-        /// <param name="encoding">The encoding to use to convert from the record's base64 string. If this is null, the data will not be decoded.</param>
-        /// <returns>
-        /// The output of the transformation function, or if an unhandled exception occurs,
-        /// the exception type and message in a processing failed record.
-        /// </returns>
+        /// <param name="record">The Kinesis Firehose record</param>
+        /// <param name="transform">The function that will transform the data from the Kinesis Firehose record</param>
+        /// <param name="encoding">The encoding used to convert the bytes from the Base64 string into a readable string</param>
+        /// <returns>The transformed record</returns>
         public static KinesisFirehoseTransformedRecord Build(KinesisFirehoseRecord record, Func<string, TransformationResult> transform, Encoding encoding)
         {
             ParameterTests.NonNull(record, "record");
@@ -112,23 +117,28 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         }
 
         /// <summary>
-        /// Creates a new transformed record from an async function passing the Base64 encoded data to the transform
-        /// function.
+        /// Creates a new transformed record. By default the Kinesis Firehose Base64 data is decoded into UTF8 before being passed to the tranform function.
         /// </summary>
-        /// <param name="record"></param>
-        /// <param name="transform"></param>
-        /// <returns>
-        /// The output of the transformation function, or if an unhandled exception occurs,
-        /// the exception type and message in a processing failed record.
-        /// </returns>
-        public static async Task<KinesisFirehoseTransformedRecord> BuildAsync(KinesisFirehoseRecord record, Func<string, Task<TransformationResult>> transform)
+        /// <param name="record">The Kinesis Firehose record</param>
+        /// <param name="transform">The function that will transform the data from the Kinesis Firehose record</param>
+        /// <param name="useDefaultEncoding">Specifies if the data in the Kinesis Firehose record should be decoded using
+        /// the default text encoding, UTF8. If this is false, the data will be passed to the transform function as a Base64 encoded string</param>
+        /// <returns>The transformed record</returns>
+        public static async Task<KinesisFirehoseTransformedRecord> BuildAsync(KinesisFirehoseRecord record, Func<string, Task<TransformationResult>> transform, bool useDefaultEncoding = true)
         {
             ParameterTests.NonNull(record, "record");
             ParameterTests.NonNull(transform, "transform");
 
             try
             {
-                TransformationResult Result = await transform.Invoke(record.Data);
+                string Data = record.Data;
+
+                if (useDefaultEncoding)
+                {
+                    Data = record.DecodeData();
+                }
+
+                TransformationResult Result = await transform.Invoke(Data);
                 return new KinesisFirehoseTransformedRecord(record.RecordId, Result.Data, Result.Result);
             }
             catch (AggregateException e)
@@ -142,16 +152,13 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         }
 
         /// <summary>
-        /// Creates a new transformed record from an async function passing the decoded data using the specified encoding to the
-        /// transform function. Your transform does not need to convert from base64 and then convert bytes to string to process the 
-        /// data record.
+        /// Creates a new transformed record. The Kinesis Firehose Base64 data is decided using the provided encoding parameter before being passed to the
+        /// transform function.
         /// </summary>
-        /// <param name="record"></param>
-        /// <param name="transform"></param>
-        /// <returns>
-        /// The output of the transformation function, or if an unhandled exception occurs,
-        /// the exception type and message in a processing failed record.
-        /// </returns>
+        /// <param name="record">The Kinesis Firehose record</param>
+        /// <param name="transform">The function that will transform the data from the Kinesis Firehose record</param>
+        /// <param name="encoding">The encoding used to convert the bytes from the Base64 string into a readable string</param>
+        /// <returns>The transformed record</returns>
         public static async Task<KinesisFirehoseTransformedRecord> BuildAsync(KinesisFirehoseRecord record, Func<string, Task<TransformationResult>> transform, Encoding encoding)
         {
             ParameterTests.NonNull(record, "record");
