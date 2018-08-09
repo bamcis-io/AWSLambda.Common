@@ -319,6 +319,9 @@ This is an example of converting the response from SageMaker for a Linear Learne
 
 ## Revision History
 
+### 1.6.3
+Added `DecodeData` method to `KinesisFirehoseTransformedRecord`.
+
 ### 1.6.2
 Updated the `Build` and `BuildAsync` methods for `KinesisFirehoseTransformedRecord`. Now you have the ability to select whether or not the data is decoded from Base64 before being sent to the transformation function.
 

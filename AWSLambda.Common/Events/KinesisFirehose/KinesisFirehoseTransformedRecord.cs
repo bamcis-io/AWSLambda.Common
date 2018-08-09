@@ -60,6 +60,21 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         #region Public Methods
 
         /// <summary>
+        /// Decodes the record data, by default this uses UTF8 to perform the decoding
+        /// </summary>
+        /// <param name="encoding"></param>
+        /// <returns></returns>
+        public string DecodeData(Encoding encoding = null)
+        {
+            if (encoding == null)
+            {
+                encoding = Encoding.UTF8;
+            }
+
+            return encoding.GetString(Convert.FromBase64String(this.Data));
+        }
+
+        /// <summary>
         /// Creates a new transformed record. By default the Kinesis Firehose Base64 data is decoded into UTF8 before being passed to the tranform function.
         /// </summary>
         /// <param name="record">The Kinesis Firehose record</param>
