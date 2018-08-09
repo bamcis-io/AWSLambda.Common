@@ -17,8 +17,8 @@
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
     <PackageReleaseNotes>Added the ability to provide an Encoding parameter to the Build method of KinesisFirehoseTransformedRecord.</PackageReleaseNotes>
-    <Version>1.6.1</Version>
-    <AssemblyVersion>1.6.1.0</AssemblyVersion>
+    <Version>1.6.2</Version>
+    <AssemblyVersion>1.6.2.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>
   </PropertyGroup>
