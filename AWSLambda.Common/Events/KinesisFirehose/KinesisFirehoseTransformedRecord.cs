@@ -54,13 +54,13 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
             this.Data = data;
             this.Result = result;
         }
-        
+
         #endregion
 
         #region Public Methods
 
         /// <summary>
-        /// Creates a new transformed record
+        /// Creates a new transformed record decoding the base64 data in the kinesis firehose record with UTF8
         /// </summary>
         /// <param name="record"></param>
         /// <param name="transform"></param>
@@ -70,9 +70,24 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         /// </returns>
         public static KinesisFirehoseTransformedRecord Build(KinesisFirehoseRecord record, Func<string, TransformationResult> transform)
         {
+            return Build(record, transform, Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// Creates a new transformed record
+        /// </summary>
+        /// <param name="record"></param>
+        /// <param name="transform"></param>
+        /// <param name="encoding">The encoding to use to convert from the record's base64 string</param>
+        /// <returns>
+        /// The output of the transformation function, or if an unhandled exception occurs,
+        /// the exception type and message in a processing failed record.
+        /// </returns>
+        public static KinesisFirehoseTransformedRecord Build(KinesisFirehoseRecord record, Func<string, TransformationResult> transform, Encoding encoding)
+        {
             try
             {
-                TransformationResult Result = transform.Invoke(record.DecodeData());
+                TransformationResult Result = transform.Invoke(record.DecodeData(encoding));
                 return new KinesisFirehoseTransformedRecord(record.RecordId, Result.Data, Result.Result);
             }
             catch (Exception e)
@@ -92,9 +107,23 @@ namespace BAMCIS.AWSLambda.Common.Events.KinesisFirehose
         /// </returns>
         public static async Task<KinesisFirehoseTransformedRecord> BuildAsync(KinesisFirehoseRecord record, Func<string, Task<TransformationResult>> transform)
         {
+            return await BuildAsync(record, transform, Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// Creates a new transformed record from an async function
+        /// </summary>
+        /// <param name="record"></param>
+        /// <param name="transform"></param>
+        /// <returns>
+        /// The output of the transformation function, or if an unhandled exception occurs,
+        /// the exception type and message in a processing failed record.
+        /// </returns>
+        public static async Task<KinesisFirehoseTransformedRecord> BuildAsync(KinesisFirehoseRecord record, Func<string, Task<TransformationResult>> transform, Encoding encoding)
+        {
             try
             {
-                TransformationResult Result = await transform.Invoke(record.DecodeData());
+                TransformationResult Result = await transform.Invoke(record.DecodeData(encoding));
                 return new KinesisFirehoseTransformedRecord(record.RecordId, Result.Data, Result.Result);
             }
             catch (AggregateException e)

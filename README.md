@@ -319,6 +319,9 @@ This is an example of converting the response from SageMaker for a Linear Learne
 
 ## Revision History
 
+### 1.6.1
+Added the ability to provide an Encoding parameter to the `Build` method of `KinesisFirehoseTransformedRecord`.
+
 ### 1.6.0
 Added SageMaker response objects.
 
