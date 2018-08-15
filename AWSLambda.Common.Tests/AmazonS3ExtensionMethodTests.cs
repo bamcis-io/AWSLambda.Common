@@ -5,7 +5,6 @@ using BAMCIS.AWSLambda.Common;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -45,8 +44,8 @@ namespace AWSLambda.Common.Tests
             // ARRANGE
             CopyObjectRequest Req = new CopyObjectRequest()
             {
-                DestinationBucket = "mhaken-demo-cf",
-                SourceBucket = "mhaken-demo-cf",
+                DestinationBucket = "dest-bucket",
+                SourceBucket = "source-bucket",
                 SourceKey = "test.txt",
                 DestinationKey = "test/file.txt",
             };
