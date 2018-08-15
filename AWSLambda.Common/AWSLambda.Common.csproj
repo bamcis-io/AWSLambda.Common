@@ -16,15 +16,16 @@
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Added DecodeData method to KinesisFirehoseTransformedRecord.</PackageReleaseNotes>
-    <Version>1.6.3</Version>
-    <AssemblyVersion>1.6.3.0</AssemblyVersion>
+    <PackageReleaseNotes>Added S3 Copy/Move methods.</PackageReleaseNotes>
+    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.20.3" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
 

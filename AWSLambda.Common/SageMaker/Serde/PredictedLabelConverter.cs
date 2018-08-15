@@ -40,7 +40,7 @@ namespace BAMCIS.AWSLambda.Common.SageMaker.Serde
                         writer.WriteValue(Val);
                     }
                 }
-                catch (InvalidCastException e)
+                catch (InvalidCastException)
                 {
                     throw new ArgumentException($"The predicted label value ${value.ToString()} is not a valid double.");
                 }

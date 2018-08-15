@@ -17,6 +17,7 @@ New functionality includes Lambda event sources not included in the AWS .NET SDK
         + [Kinesis Firehose Events](#kinesis-firehose-events)
 	* [Custom Resource Handler](#custom-resource-handler)
     * [SageMaker](#sagemaker)
+    * [S3 Methods](#s3-methods)
 - [Revision History](#revision-history)
 
 ## Usage
@@ -317,7 +318,47 @@ This is an example of converting the response from SageMaker for a Linear Learne
 
     LinearLearnerBinaryInferenceResponse Response = JsonConvert.DeserializeObject<LinearLearnerBinaryInferenceResponse>(Json);
 
+### S3 Methods
+There are two methods added as extension methods to the AWS `IAmazonS3` interface. These methods simplify the code needed to copy or move an S3 object to another location. The method decides if it needs to use a multipart copy or a single copy operation to move the object and also deletes the source object during a move. You can also specify the part size to use during a multipart copy, the minimum is 5 MiB and the maximum is 5 GiB.
+
+In the following examples the `Req` variable is a `CopyObjectRequest` object from the AWS S3 SDK. 
+
+This will move the object and only use multipart if the object is over 5 GiB and will use the default 5 MiB part size.
+
+    IAmazonS3 Client = new AmazonS3Client();
+    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, true);
+
+To only copy and not move (move deletes the source object, copy does not), specify `false` for the last parameter, or don't specify anything as it defaults to `false`.
+
+    IAmazonS3 Client = new AmazonS3Client();
+    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req);
+
+This will move the object and use a part size of 16 MiB during a multipart copy if the object is over 5 GiB in size.
+
+    IAmazonS3 Client = new AmazonS3Client();
+    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, 16777216, true);
+
+This will move the object and force a multipart copy using the default multipart size, 5 MiB, as long as the part size is less than the object's size.
+
+	IAmazonS3 Client = new AmazonS3Client();
+    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, true, true);
+
+This will move the object and force a multipart copy using the specified part size, 16 MiB.
+
+    IAmazonS3 Client = new AmazonS3Client();
+    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, 16777216, true, true);
+
+For the last two examples, there is another method that accomplishes the same task, it removes the need to second boolean `true` value in the method signature. This will still use the single operation copy if the source object doesn't support multipart copy, i.e. it is less than 5 MiB, or your part size is greater than the object's size.
+
+    IAmazonS3 Client = new AmazonS3Client();
+    CopyObjectResponse Response = CopyOrMoveObjectMultipartAsync(Req, true);
+    CopyObjectResponse Response = CopyOrMoveObjectMultipartAsync(Req, 16777216, true);
+
 ## Revision History
+
+### 1.7.0
+Added extension methods to IAmazonS3 that allow you to copy or move an S3 object using
+either a sinlge copy operation or using multipart upload.
 
 ### 1.6.3
 Added `DecodeData` method to `KinesisFirehoseTransformedRecord`.
