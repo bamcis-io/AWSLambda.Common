@@ -16,8 +16,8 @@
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Added S3 Copy/Move methods.</PackageReleaseNotes>
-    <Version>1.7.0</Version>
+    <PackageReleaseNotes>Bug fix in S3ObjectInfo class</PackageReleaseNotes>
+    <Version>1.7.1</Version>
     <AssemblyVersion>1.7.0.0</AssemblyVersion>
     <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>

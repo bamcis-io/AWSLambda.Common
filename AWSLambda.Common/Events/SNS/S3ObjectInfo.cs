@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 using System.Net;
 
 namespace BAMCIS.AWSLambda.Common.Events.SNS
@@ -24,11 +25,15 @@ namespace BAMCIS.AWSLambda.Common.Events.SNS
         /// <summary>
         /// The object's ETag
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue("")]
         public string ETag { get; }
 
         /// <summary>
         /// The object version if bucket is versioning-enabled, otherwise null
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue("")]
         public string VersionId { get; }
 
         /// <summary>
@@ -50,6 +55,8 @@ namespace BAMCIS.AWSLambda.Common.Events.SNS
         ///  - The sequencers can be of different lengths. So to compare these values, you first 
         ///    right pad the shorter value with zeros and then do lexicographical comparison. 
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue("")]
         public string Sequencer { get; }
 
         #endregion
@@ -76,9 +83,9 @@ namespace BAMCIS.AWSLambda.Common.Events.SNS
             // Remove URL encoding from key
             this.Key = WebUtility.UrlDecode(ParameterTests.NotNullOrEmpty(key, "key"));
             this.Size = size > 0 ? size : throw new ArgumentOutOfRangeException("The object size cannot be less than or equal to 0.");
-            this.ETag = ParameterTests.NotNullOrEmpty(eTag, "eTag");
-            this.VersionId = versionId; // Can be null
-            this.Sequencer = sequencer; // Can be null
+            this.ETag = eTag ?? String.Empty; // Can be null (might be missing in json record)
+            this.VersionId = versionId ?? String.Empty; // Can be null
+            this.Sequencer = sequencer ?? String.Empty; // Can be null
         }
 
         #endregion

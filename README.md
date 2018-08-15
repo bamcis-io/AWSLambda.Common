@@ -356,6 +356,9 @@ For the last two examples, there is another method that accomplishes the same ta
 
 ## Revision History
 
+### 1.7.1
+Bug fix in `S3ObjectInfo` class.
+
 ### 1.7.0
 Added extension methods to IAmazonS3 that allow you to copy or move an S3 object using
 either a sinlge copy operation or using multipart upload.
