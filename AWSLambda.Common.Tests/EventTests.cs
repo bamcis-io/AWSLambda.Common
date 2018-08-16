@@ -141,6 +141,72 @@ namespace AWSLambda.Common.Tests
         }
 
         [Fact]
+        public void SNSTestMessageEvent()
+        {
+            // ARRANGE
+            string Json = @"{
+""Service"":""Amazon S3"",
+""Event"":""s3:TestEvent"",
+""Time"":""2014-10-13T15:57:02.089Z"",
+""Bucket"":""bucketname"",
+""RequestId"":""5582815E1AEA5ADF"",
+""HostId"":""8cLeGAmw098X5cv4Zkwcmo8vvZa3eH3eKxsPzbB9wrR+YstdA6Knx4Ip8EXAMPLE""
+}";
+            Json = Json.Trim().Replace("\r", "").Replace("\n", "").Replace("\t", "");
+
+            // ACT
+            S3TestMessage Message = JsonConvert.DeserializeObject<S3TestMessage>(Json);
+
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            IsoDateTimeConverter dateConverter = new IsoDateTimeConverter
+            {
+                DateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'"
+            };
+
+            settings.Converters.Add(dateConverter);
+
+            string Content = JsonConvert.SerializeObject(Message, Formatting.None, settings);
+
+            // ASSERT
+            Assert.Equal(Json, Content, true, true, true);
+        }
+
+        [Fact]
+        public void SNSTestMessageTestEventTrue()
+        {
+            // ARRANGE
+            string Json = @"{
+""Service"":""Amazon S3"",
+""Event"":""s3:TestEvent"",
+""Time"":""2014-10-13T15:57:02.089Z"",
+""Bucket"":""bucketname"",
+""RequestId"":""5582815E1AEA5ADF"",
+""HostId"":""8cLeGAmw098X5cv4Zkwcmo8vvZa3eH3eKxsPzbB9wrR+YstdA6Knx4Ip8EXAMPLE""
+}";
+           
+            // ACT
+           
+
+            // ASSERT
+            Assert.True(S3TestMessage.IsTestMessage(Json));
+        }
+
+        [Fact]
+        public void SNSTestMessageTestEventFalse()
+        {
+            // ARRANGE
+            string Json = @"
+""Event"":""s3:TestEvent""
+}";
+
+            // ACT
+
+
+            // ASSERT
+            Assert.False(S3TestMessage.IsTestMessage(Json));
+        }
+
+        [Fact]
         public void CloudWatchEventTest()
         {
             // ARRANGE

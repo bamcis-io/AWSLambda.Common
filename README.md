@@ -356,6 +356,9 @@ For the last two examples, there is another method that accomplishes the same ta
 
 ## Revision History
 
+### 1.7.2
+Added `S3TestMessage` object for SNS events.
+
 ### 1.7.1
 Bug fix in `S3ObjectInfo` class.
 

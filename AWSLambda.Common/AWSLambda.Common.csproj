@@ -10,17 +10,18 @@
     <Authors>Michael Haken</Authors>
     <Company>bamcis.io</Company>
     <Product>AWS Lambda Common Utilities</Product>
-    <Description>Provides some commonly utilized tools for running AWS Lambda functions. Functions around writting logs via the ILambdaContext, dealing with asynchronous events, provides a framework to simplify custom resource creation with CloudFormation, and includes event sources and response objects for Lambda functions that are not part of the AWS .NET SDK.</Description>
+    <Description>Provides some commonly utilized tools for running AWS Lambda functions including CloudFormation Custom Resource creation, logging convenience methods for CloudWatch, async task handling with Interleaved, Kinesis Firehose events, SNS S3 event messages, and SageMaker inference responses.</Description>
     <Copyright>BAMCIS</Copyright>
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSLambda.Common/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bamcis-io/AWSLambda.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bamcis-io/AWSLambda.Common</RepositoryUrl>
-    <PackageReleaseNotes>Bug fix in S3ObjectInfo class</PackageReleaseNotes>
-    <Version>1.7.1</Version>
-    <AssemblyVersion>1.7.0.0</AssemblyVersion>
-    <PackageTags>AWS Lambda Common Logging Interleaved</PackageTags>
+    <PackageReleaseNotes>Added S3TestMessage class.</PackageReleaseNotes>
+    <Version>1.7.2</Version>
+    <AssemblyVersion>1.7.2.0</AssemblyVersion>
+    <PackageTags>AWS Lambda Common Logging Interleaved Events SageMaker CloudFormation</PackageTags>
     <NetStandardImplicitPackageVersion>1.6</NetStandardImplicitPackageVersion>
+    <FileVersion>1.7.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
