@@ -16,6 +16,20 @@ namespace AWSLambda.Common.Tests
 {
     public class EventTests
     {
+        string asgLifecycleSNSMessageData = @"
+{
+""LifecycleHookName"":""test2"",
+""AccountId"":""252486826203"",
+""RequestId"":""4a7f8796-7ed7-4b21-bff7-d190f91afccf"",
+""LifecycleTransition"":""autoscaling:EC2_INSTANCE_TERMINATING"",
+""AutoScalingGroupName"":""test"",
+""Service"":""AWS Auto Scaling"",
+""Time"":""2019-05-06T16:14:44.397Z"",
+""EC2InstanceId"":""i-076c7bf793337129f"",
+""LifecycleActionToken"":""c71ea497-6931-4a15-b047-8ec014ee33a7""
+}";
+
+
         [Fact]
         public void SNSS3EventTest()
         {
@@ -204,32 +218,6 @@ namespace AWSLambda.Common.Tests
 
             // ASSERT
             Assert.False(S3TestMessage.IsTestMessage(Json));
-        }
-
-        [Fact]
-        public void CloudWatchEventTest()
-        {
-            // ARRANGE
-            string Json = @"
-{
-""version"":""0"",
-""id"":""125e7841-c049-462d-86c2-4efa5f64e293"",""detail-type"":""Scheduled Event"",""source"":""aws.events"",
-""account"":""415720405880"",
-""time"":""2016-12-16T19:55:42Z"",
-""region"":""us-east-1"",
-""resources"":[
-""arn:aws:events:us-east-1:415720405880:rule/BackupTest-GetGetBackups-X2YM3334N4JN""
-],
-""detail"":{}
-}";
-            Json = Json.Trim().Replace("\r", "").Replace("\n", "").Replace("\t", "");
-
-            // ACT
-            CloudWatchScheduledEvent Event = JsonConvert.DeserializeObject<CloudWatchScheduledEvent>(Json);
-            string Content = JsonConvert.SerializeObject(Event, Formatting.None);
-
-            // ASSERT
-            Assert.Equal(Json, Content, true, true, true);
         }
 
         [Fact]
@@ -577,6 +565,21 @@ namespace AWSLambda.Common.Tests
 
             // ASSERT
             Assert.True(!String.IsNullOrEmpty(Json));
+        }
+
+        [Fact]
+        public void SNSAutoScalingLifecycleHookMessage()
+        {
+            // ARRANGE
+           
+            string Json = asgLifecycleSNSMessageData.Trim().Replace("\r", "").Replace("\n", "").Replace("\t", "");
+
+            // ACT
+            SNSAutoScalingLifecycleHookMessage Response = JsonConvert.DeserializeObject<SNSAutoScalingLifecycleHookMessage>(Json);
+            string Content = JsonConvert.SerializeObject(Response, Formatting.None);
+
+            // ASSERT
+            Assert.Equal(Json, Content, true, true, true);
         }
     }
 }

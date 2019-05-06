@@ -9,15 +9,12 @@ New functionality includes Lambda event sources not included in the AWS .NET SDK
 ## Table of Contents
 - [Usage](#usage)
 	* [Logging](#logging)
-	* [Interleaved](#interleaved)
 	* [Events](#events)
-		+ [CloudWatch Scheduled Event](#cloudwatch-scheduled-event)
 		+ [Custom Resources](#custom-resources)
 		+ [SNS S3 Events](#sns-s3-events)
         + [Kinesis Firehose Events](#kinesis-firehose-events)
 	* [Custom Resource Handler](#custom-resource-handler)
     * [SageMaker](#sagemaker)
-    * [S3 Methods](#s3-methods)
 - [Revision History](#revision-history)
 
 ## Usage
@@ -69,45 +66,7 @@ Which will produce
 	    "WatsonBuckets":null
 	}
 
-### Interleaved
-
-    Task<int>[] Tasks = new[] {
-        Task.Delay(3000).ContinueWith(_ => 3),
-        Task.Delay(1000).ContinueWith(_ => 1),
-        Task.Delay(2000).ContinueWith(_ => 2),
-        Task.Delay(5000).ContinueWith(_ => 5),
-        Task.Delay(4000).ContinueWith(_ => 4),
-    };
-
-    foreach (Task<int> CompletedTask in Tasks.Interleaved())
-    {
-        int Result = await CompletedTask;
-        Console.WriteLine($"{DateTime.Now.ToString()}: {Result}");
-    }
-
-If the start time is 4/23/2018 08:00:00 AM, this will print
-
-    4/23/2018 08:00:01 AM: 1
-    4/23/2018 08:00:02 AM: 2
-    4/23/2018 08:00:03 AM: 3
-    4/23/2018 08:00:04 AM: 4
-    4/23/2018 08:00:05 AM: 5
-
-Instead of printing:
-
-    4/23/2018 08:00:03 AM: 3
-    4/23/2018 08:00:03 AM: 1
-    4/23/2018 08:00:03 AM: 2
-    4/23/2018 08:00:05 AM: 5
-    4/23/2018 08:00:05 AM: 4
-
-This method was adapted from [here](https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete/ "processing-tasks-as-they-complete").
-
 ### Events
-
-#### CloudWatch Scheduled Event
-
-This is the event type that can be used when a Lambda function is triggered by a scheduled event.
 
 #### Custom Resources
 
@@ -318,43 +277,10 @@ This is an example of converting the response from SageMaker for a Linear Learne
 
     LinearLearnerBinaryInferenceResponse Response = JsonConvert.DeserializeObject<LinearLearnerBinaryInferenceResponse>(Json);
 
-### S3 Methods
-There are two methods added as extension methods to the AWS `IAmazonS3` interface. These methods simplify the code needed to copy or move an S3 object to another location. The method decides if it needs to use a multipart copy or a single copy operation to move the object and also deletes the source object during a move. You can also specify the part size to use during a multipart copy, the minimum is 5 MiB and the maximum is 5 GiB.
-
-In the following examples the `Req` variable is a `CopyObjectRequest` object from the AWS S3 SDK. 
-
-This will move the object and only use multipart if the object is over 5 GiB and will use the default 5 MiB part size.
-
-    IAmazonS3 Client = new AmazonS3Client();
-    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, true);
-
-To only copy and not move (move deletes the source object, copy does not), specify `false` for the last parameter, or don't specify anything as it defaults to `false`.
-
-    IAmazonS3 Client = new AmazonS3Client();
-    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req);
-
-This will move the object and use a part size of 16 MiB during a multipart copy if the object is over 5 GiB in size.
-
-    IAmazonS3 Client = new AmazonS3Client();
-    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, 16777216, true);
-
-This will move the object and force a multipart copy using the default multipart size, 5 MiB, as long as the part size is less than the object's size.
-
-	IAmazonS3 Client = new AmazonS3Client();
-    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, true, true);
-
-This will move the object and force a multipart copy using the specified part size, 16 MiB.
-
-    IAmazonS3 Client = new AmazonS3Client();
-    CopyObjectResponse Response = await Client.CopyOrMoveObjectAsync(Req, 16777216, true, true);
-
-For the last two examples, there is another method that accomplishes the same task, it removes the need to second boolean `true` value in the method signature. This will still use the single operation copy if the source object doesn't support multipart copy, i.e. it is less than 5 MiB, or your part size is greater than the object's size.
-
-    IAmazonS3 Client = new AmazonS3Client();
-    CopyObjectResponse Response = CopyOrMoveObjectMultipartAsync(Req, true);
-    CopyObjectResponse Response = CopyOrMoveObjectMultipartAsync(Req, 16777216, true);
-
 ## Revision History
+
+### 2.0.0
+Removed `CloudWatchScheduledEvent` class, AWS now provides an SDK for these events. Added `SNSAutoScalingLifecycleHookMessage` for receiving ASG lifecycle hook events through SNS. Removed the `AmazonS3ExtensionMethods` class from this package, they are now a standalone library. Removed the `Interleaved` extension method and moved to its own package.
 
 ### 1.7.2
 Added `S3TestMessage` object for SNS events.

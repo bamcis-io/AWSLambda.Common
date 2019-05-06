@@ -137,59 +137,6 @@ namespace BAMCIS.AWSLambda.Common
             }
         }
 
-        /// <summary>
-        /// Provides an IEnumerable of tasks that will be yielded as the tasks finish so each
-        /// item can be processed in the order it finishes, not in the order that were added to the
-        /// input IEnumerable or in the order they were started.
-        /// 
-        /// https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete/
-        /// </summary>
-        /// <typeparam name="T">The type of the return value from the async task</typeparam>
-        /// <param name="tasks">The tasks that were launched and awaiting finish</param>
-        /// <returns>The tasks that were input ordered by their finish time</returns>
-        public static IEnumerable<Task<T>> Interleaved<T>(this IEnumerable<Task<T>> tasks)
-        {
-            List<Task<T>> InputTasks = tasks.ToList();
-
-            TaskCompletionSource<T>[] Buckets = new TaskCompletionSource<T>[InputTasks.Count];
-            Task<T>[] Results = new Task<T>[Buckets.Length];
-
-            for (int i = 0; i < Buckets.Length; i++)
-            {
-                Buckets[i] = new TaskCompletionSource<T>();
-                Results[i] = Buckets[i].Task;
-            }
-
-            int nextTaskIndex = -1;
-
-            foreach (Task<T> InputTask in InputTasks)
-            {
-                InputTask.ContinueWith(completed =>
-                {
-                    TaskCompletionSource<T> Bucket = Buckets[Interlocked.Increment(ref nextTaskIndex)];
-
-                    if (completed.IsFaulted)
-                    {
-                        if (completed.Exception != null)
-                        {
-                            Bucket.TrySetException(completed.Exception.InnerExceptions);
-                        }
-                    }
-                    else if (completed.IsCanceled)
-                    {
-                        Bucket.TrySetCanceled();
-                    }
-                    else
-                    {
-                        Bucket.TrySetResult(completed.Result);
-                    }
-
-                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-            }
-
-            return Results;
-        }
-
         #endregion
 
         #region Private Methods

@@ -212,7 +212,7 @@ namespace AWSLambda.Common.Tests
             // ACT
             try
             {
-                HttpRequestMessage Request = new HttpRequestMessage(HttpMethod.Head, "http://www.bamcis.io");
+                HttpRequestMessage Request = new HttpRequestMessage(HttpMethod.Head, "http://github.com");
                 HttpResponseMessage Res = await Client.SendAsync(Request);
             }
             catch (TaskCanceledException ex)
@@ -224,40 +224,6 @@ namespace AWSLambda.Common.Tests
             Assert.True(true);
         }
 
-        #endregion
-
-        #region Async
-
-        [Fact]
-        public async Task TestInterleaved()
-        {
-            // ARRANGE
-            Task<int>[] Tasks = new[] {
-                Task.Delay(3000).ContinueWith(_ => 3),
-                Task.Delay(1000).ContinueWith(_ => 1),
-                Task.Delay(2000).ContinueWith(_ => 2),
-                Task.Delay(5000).ContinueWith(_ => 5),
-                Task.Delay(4000).ContinueWith(_ => 4),
-            };
-
-            int[] Results = new int[Tasks.Length];
-            int Counter = 0;
-
-            // ACT
-            foreach (Task<int> CompletedTask in Tasks.Interleaved())
-            {
-                int Result = await CompletedTask;
-                Console.WriteLine($"{DateTime.Now.ToString()}: {Results}");
-                Results[Counter++] = Result;
-            }
-
-            // ASSERT
-            for (int i = 1; i <= Results.Length; i++)
-            {
-                Assert.Equal(i, Results[i - 1]);
-            }
-        }
-
-        #endregion
+        #endregion       
     }
 }
