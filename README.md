@@ -281,6 +281,9 @@ This is an example of converting the response from SageMaker for a Linear Learne
 
 ## Revision History
 
+### 2.0.1
+Package cleanup.
+
 ### 2.0.0
 Removed `CloudWatchScheduledEvent` class, AWS now provides an SDK for these events. Added `SNSAutoScalingLifecycleHookMessage` for receiving ASG lifecycle hook events through SNS. Removed the `AmazonS3ExtensionMethods` class from this package, they are now a standalone library. Removed the `Interleaved` extension method and moved to its own package.
 
