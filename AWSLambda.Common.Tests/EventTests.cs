@@ -1,6 +1,5 @@
 ﻿using Amazon.Lambda.TestUtilities;
 using BAMCIS.AWSLambda.Common.CustomResources;
-using BAMCIS.AWSLambda.Common.Events;
 using BAMCIS.AWSLambda.Common.Events.KinesisFirehose;
 using BAMCIS.AWSLambda.Common.Events.SNS;
 using Newtonsoft.Json;

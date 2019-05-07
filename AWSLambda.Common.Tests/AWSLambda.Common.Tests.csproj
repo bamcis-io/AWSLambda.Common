@@ -7,8 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.CloudWatchEvents" Version="1.0.0" />
     <PackageReference Include="Amazon.Lambda.Core" Version="1.1.0" />
+    <PackageReference Include="Amazon.Lambda.KinesisFirehoseEvents" Version="1.1.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.5.0" />
+    <PackageReference Include="Amazon.Lambda.SNSEvents" Version="1.1.0" />
     <PackageReference Include="Amazon.Lambda.TestUtilities" Version="1.1.0" />
     <PackageReference Include="AWSSDK.ElasticTranscoder" Version="3.3.100.15" />
     <PackageReference Include="AWSSDK.Lambda" Version="3.3.101.5" />

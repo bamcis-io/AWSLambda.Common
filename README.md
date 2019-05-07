@@ -145,6 +145,8 @@ Keep in mind before serializing, you should check to make sure that the message 
 
 #### Kinesis Firehose Events
 
+AWS provides an SDK for this now, but I don't find it as comprehensive. For example, a Kinesis Stream data record that is sent to Kinesis Firehose has additional data than just the normal Firehose Record. Additionally, this also handles transformation of those records to send back to the Firehose stream.
+
 Provides classes for accepting events in a Lambda function originating from a Kinesis Firehose Transformation. There are two major categories of records in a Kinesis Firehose, records originating from a Kinesis Stream and all of the others. The Kinesis Stream records has an additional property in the record `KinesisRecordMetadata`. For those types of events configure your entrypoint like this:
 
     public KinesisFirehoseTransformResponse Entrypoint(KinesisFirehoseEvent<KinesisFirehoseKinesisStreamRecord> firehoseEvent, ILambdaContext context)
@@ -155,7 +157,7 @@ For all of the other types of events configure your entrypoint like this:
   
 This defaults the records in the `firehoseEvent` object to be of type `KinesisFirehoseRecord`.
 
-After performing the transform return a 'KinesisFirehoseTransformResponse' constructed with an `IEnumerable<KinesisFirehoseTranformationRecord>`. Each `KinesisFirehoseTranformationRecord` represents the transform of a single `KinesisFirehoseRecord`. An overall example of a Lambda function tranformation might look like the following. This transformation takes JSON data in a Kinesis Stream and converts it to CSV.
+After performing the transform return a `KinesisFirehoseTransformResponse` constructed with an `IEnumerable<KinesisFirehoseTranformationRecord>`. Each `KinesisFirehoseTranformationRecord` represents the transform of a single `KinesisFirehoseRecord`. An overall example of a Lambda function tranformation might look like the following. This transformation takes JSON data in a Kinesis Stream and converts it to CSV.
 
     public KinesisFirehoseTransformResponse Exec(KinesisFirehoseEvent request, ILambdaContext context)
     {
