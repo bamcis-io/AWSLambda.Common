@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.6;netstandard2.0</TargetFrameworks>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.0</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">2.0.0</NetStandardImplicitPackageVersion>
+    <RootNamespace>BAMCIS.Lambda.Common</RootNamespace>
+    <AssemblyName>BAMCIS.Lambda.Common</AssemblyName>
+    <PackageId>BAMCIS.Lambda.Common</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Michael Haken</Authors>
+    <Company>bamcis.io</Company>
+    <Product>AWS Lambda Common Utilities</Product>
+    <Description>Provides some commonly utilized tools for running AWS Lambda functions including CloudFormation Custom Resource creation, logging convenience methods for CloudWatch, Kinesis Firehose events, SNS S3 event messages, and SageMaker inference responses.</Description>
+    <Copyright>bamcis.io</Copyright>
+    <RepositoryType>Git</RepositoryType>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bamcis-io/Lambda.Common</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bamcis-io/Lambda.Common</RepositoryUrl>
+    <PackageReleaseNotes>Updated handling in the custom resources code to be more supportable for unit tests.</PackageReleaseNotes>
+    <Version>2.1.0</Version>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <PackageTags>AWS Lambda Logging Events SageMaker CloudFormation CustomResource</PackageTags>
+    <FileVersion>2.1.0.0</FileVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>AWS.Lambda.Common.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" Version="1.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Amazon.Lambda.CloudWatchEvents">
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\AWSPriceListApi\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

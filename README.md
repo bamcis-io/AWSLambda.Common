@@ -1,10 +1,12 @@
 # BAMCIS AWS Lambda Common Utilities
 
-Provides basic Extension Methods for the ILambdaContext to simplify logging messages and exception in Lambda
-functions. Also, provides an extension method to handle processing async tasks as they finish to help speed
-up execution time inside a Lambda function.
+Provides basic Extension Methods for the ILambdaContext to simplify logging messages and exception in Lambda functions. 
 
-New functionality includes Lambda event sources not included in the AWS .NET SDK, like a scheduled event or a Kinesis Firehose transformation. New deserialization classes have been added for SageMaker so you can process responses from a SageMaker endpoint in a Lambda function.
+New deserialization classes have been added for SageMaker so you can process responses from a SageMaker endpoint in a Lambda function.
+
+Deserialization classes also exist for the message data in SNS notifications related to S3 events as well as an enhanced Kinesis Firehose Event that provides some added functionality over the SDK.
+
+A framework for building custom resources in CloudFormation is also included.
 
 ## Table of Contents
 - [Usage](#usage)
@@ -42,7 +44,7 @@ You can also you it with exceptions:
 
     try
     {
-        int Result = 100 / 0;
+        int result = 100 / 0;
     }
     catch (Exception ex)
     {
@@ -57,12 +59,12 @@ Which will produce
 	    "Data":null,
 	    "InnerException":null,
 	    "HelpURL":null,
-	    "StackTraceString":"   at AWSLambda.Common.Tests.ExtensionMethodTests.TestWriteException() in C:\\Workspaces\\AWSLambda.Common\\AWSLambda.Common.Tests\\ExtensionMethodTests.cs:line 144",
+	    "StackTraceString":"   at Lambda.Common.Tests.ExtensionMethodTests.TestWriteException() in C:\\Workspaces\\Lambda.Common\\Lambda.Common.Tests\\ExtensionMethodTests.cs:line 144",
 	    "RemoteStackTraceString":null,
 	    "RemoteStackIndex":0,
 	    "ExceptionMethod":null,
 	    "HResult":-2147352558,
-	    "Source":"AWSLambda.Common.Tests",
+	    "Source":"Lambda.Common.Tests",
 	    "WatsonBuckets":null
 	}
 
@@ -70,9 +72,7 @@ Which will produce
 
 #### Custom Resources
 
-The `CustomResourceRequest` class is the event that is provided when a custom resource is created 
-with CloudFormation via a Lambda function. The `CustomResourceResponse` class is used as the item to
-be serialized and delivered to the pre-signed S3 url. 
+The `CustomResourceRequest` class is the event that is provided when a custom resource is created with CloudFormation via a Lambda function. The `CustomResourceResponse` class is used as the item to be serialized and delivered to the pre-signed S3 url. 
 
 #### SNS S3 Events
 
@@ -130,7 +130,7 @@ That `message` string looks like the following JSON:
 
 Now you can perform a simple deserialization of that message body:
 
-    SNSS3RecordSet RecordSet = JsonConvert.DeserializeObject<SNSS3RecordSet>(message);
+    SNSS3RecordSet recordSet = JsonConvert.DeserializeObject<SNSS3RecordSet>(message);
 
 Keep in mind before serializing, you should check to make sure that the message is not a test message that looks like:
 
@@ -145,9 +145,9 @@ Keep in mind before serializing, you should check to make sure that the message 
 
 #### Kinesis Firehose Events
 
-AWS provides an SDK for this now, but I don't find it as comprehensive. For example, a Kinesis Stream data record that is sent to Kinesis Firehose has additional data than just the normal Firehose Record. Additionally, this also handles transformation of those records to send back to the Firehose stream.
+AWS provides an SDK for this now, but I don't find it as comprehensive. For example, a Kinesis Stream data record that is sent to Kinesis Firehose has additional data on top of just the normal Firehose Record. Additionally, this also handles transformation of those records to send back to the Firehose stream.
 
-Provides classes for accepting events in a Lambda function originating from a Kinesis Firehose Transformation. There are two major categories of records in a Kinesis Firehose, records originating from a Kinesis Stream and all of the others. The Kinesis Stream records has an additional property in the record `KinesisRecordMetadata`. For those types of events configure your entrypoint like this:
+This provides classes for accepting events in a Lambda function originating from a Kinesis Firehose Transformation. There are two major categories of records in a Kinesis Firehose, records originating from a Kinesis Stream and all of the others. The Kinesis Stream records has an additional property in the record `KinesisRecordMetadata`. For those types of events configure your entrypoint like this:
 
     public KinesisFirehoseTransformResponse Entrypoint(KinesisFirehoseEvent<KinesisFirehoseKinesisStreamRecord> firehoseEvent, ILambdaContext context)
 
@@ -161,34 +161,32 @@ After performing the transform return a `KinesisFirehoseTransformResponse` const
 
     public KinesisFirehoseTransformResponse Exec(KinesisFirehoseEvent request, ILambdaContext context)
     {
-        List<KinesisFirehoseTransformedRecord> TransformedRecords = new List<KinesisFirehoseTransformedRecord>();
+        List<KinesisFirehoseTransformedRecord> transformedRecords = new List<KinesisFirehoseTransformedRecord>();
 
-        foreach (KinesisFirehoseRecord Record in request.Records)
+        foreach (KinesisFirehoseRecord record in request.Records)
         {
             try
             {
-                string Data = Record.DecodeData();
-                JObject Obj = JObject.Parse(Data);
-                string Row = Convert.ToBase64String(Encoding.UTF8.GetBytes(String.Join("|", Obj.ToObject<Dictionary<string, string>>().Select(x => x.Value)) + "\n"));
+                string data = record.DecodeData();
+                JObject obj = JObject.Parse(data);
+                string row = Convert.ToBase64String(Encoding.UTF8.GetBytes(String.Join("|", obj.ToObject<Dictionary<string, string>>().Select(x => x.Value)) + "\n"));
 
-                KinesisFirehoseTransformedRecord Transform = new KinesisFirehoseTransformedRecord(Record.RecordId, Row, TransformationResultStatus.OK);
-                TransformedRecords.Add(Transform);
+                KinesisFirehoseTransformedRecord transform = new KinesisFirehoseTransformedRecord(record.RecordId, row, TransformationResultStatus.OK);
+                transformedRecords.Add(transform);
             }
             catch (Exception e)
             {
-                KinesisFirehoseTransformedRecord Transform = new KinesisFirehoseTransformedRecord(Record.RecordId, Record.Data, TransformationResultStatus.PROCESSING_FAILED);
-                TransformedRecords.Add(Transform);
+                KinesisFirehoseTransformedRecord transform = new KinesisFirehoseTransformedRecord(record.RecordId, record.Data, TransformationResultStatus.PROCESSING_FAILED);
+                transformedRecords.Add(transform);
             }
         }
 
-        return new KinesisFirehoseTransformResponse(TransformedRecords);
+        return new KinesisFirehoseTransformResponse(transformedRecords);
     }
 
 ### Custom Resource Handler
 
-In addition to the classes for serializing the custom resource requests and responses, there are classes that support aiding
-the automation of creating a custom resource Lambda function. The `CustomResourceHandler` class is an abstract class that you 
-can inherit in your class the Lambda function handler targets.
+In addition to the classes for serializing the custom resource requests and responses, there are classes that support aiding the automation of creating a custom resource Lambda function. The `CustomResourceHandler` class is an abstract class that you can inherit in your class the Lambda function handler targets.
 
     using ...
 
@@ -201,14 +199,9 @@ can inherit in your class the Lambda function handler targets.
         {
             ...
 
-Then, you just need to implement 3 methods, `CreateAsync`, `UpdateAsync`, and `DeleteAsync`. You shouldn't need to override the
-`ExecuteAsync` method, but you can if you want to do something different. I'd reccomend looking at what the default code is before
-you override it to make sure you cover all of the cases it manages. The `ExecuteAsync` method can be the direct target of the Lambda
-invocation handler, so in the case above you'd specify "MyLambdaFunction::MyLamdbaFunction.Entrypoint::ExecuteAsync".
+Then, you just need to implement 3 methods, `CreateAsync`, `UpdateAsync`, and `DeleteAsync`. You shouldn't need to override the `ExecuteAsync` method, but you can if you want to do something different. I'd reccomend looking at what the default code is before you override it to make sure you cover all of the cases it manages. The `ExecuteAsync` method can be the direct target of the Lambda invocation handler, so in the case above you'd specify "MyLambdaFunction::MyLamdbaFunction.Entrypoint::ExecuteAsync".
 
-In addition to the abstract `CustomResourceHandler` class, there is a concrete implementation in the `CustomResourceFactory` class. 
-Instead of implementing the 3 required methods in the class, you can specify them as delegates in the class constructor and call the
-`ExecuteAsync` method in your entrypoint. For example, your AWS Lambda function might look like this:
+In addition to the abstract `CustomResourceHandler` class, there is a concrete implementation in the `CustomResourceFactory` class. Instead of implementing the 3 required methods in the class, you can specify them as delegates in the class constructor and call the `ExecuteAsync` method in your entrypoint. For example, your AWS Lambda function might look like this:
 
 	using ...
 
@@ -261,15 +254,11 @@ Instead of implementing the 3 required methods in the class, you can specify the
         }
     }
 
-All of the request and response processing is performed in the handler, in either implementation you want to use, 
-so all you have to do is write the delegate functions or member functions that will implement the actual create, update, and delete logic. 
+All of the request and response processing is performed in the handler, in either implementation you want to use,  so all you have to do is write the delegate functions or member functions that will implement the actual create, update, and delete logic. 
 
-The `CustomResourceResult` object contains the original request, the response that was generated to 
-be sent to the pre-signed S3 url, the http response from S3, and any exception that may have been thrown. The handler also does some basic logging
-to CloudWatch during execution to help troubleshoot, but your create, update, and delete functions should log along the way as well.
+The `CustomResourceResult` object contains the original request, the response that was generated to be sent to the pre-signed S3 url, the http response from S3, and any exception that may have been thrown. The handler also does some basic logging to CloudWatch during execution to help troubleshoot, but your create, update, and delete functions should log along the way as well.
 
-I recommend constructing the handler in the Lambda function's constructor so you save the latency on building the object on subsequent invocations of
-your function.
+I recommend constructing the handler in the Lambda function's constructor so you save the latency on building the object on subsequent invocations of your function.
 
 ### SageMaker
 Provides classes that can be used to deserialize JSON responses from SageMaker such as Linear Learner Binary Classification, K-Means, or Random Cut Forest. Make sure you have specified your output from the SageMaker endpoint as `application/json`.
@@ -277,9 +266,12 @@ Provides classes that can be used to deserialize JSON responses from SageMaker s
 
 This is an example of converting the response from SageMaker for a Linear Learner Binary Classification prediction model.
 
-    LinearLearnerBinaryInferenceResponse Response = JsonConvert.DeserializeObject<LinearLearnerBinaryInferenceResponse>(Json);
+    LinearLearnerBinaryInferenceResponse response = JsonConvert.DeserializeObject<LinearLearnerBinaryInferenceResponse>(json);
 
 ## Revision History
+
+### 2.1.0
+Updated handling in the custom resources code to be more supportable for unit tests.
 
 ### 2.0.1
 Package cleanup.
