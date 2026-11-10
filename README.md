@@ -1,3 +1,5 @@
+This repo has been archived and is no longer maintained.
+
 # BAMCIS AWS Lambda Common Utilities
 
 Provides basic Extension Methods for the ILambdaContext to simplify logging messages and exception in Lambda functions. 
